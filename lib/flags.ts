@@ -1,0 +1,58 @@
+// Mapowanie realnych nazw drużyn (z bazy, PL) -> kody ISO dla flagcdn.
+// Flagi renderujemy jako SVG z https://flagcdn.com/<code>.svg (ładniejsze niż emoji).
+export const NAME_TO_CODE: Record<string, string> = {
+  Algieria: "dz",
+  Anglia: "gb-eng",
+  "Arabia Saud.": "sa",
+  Argentyna: "ar",
+  Australia: "au",
+  Austria: "at",
+  Belgia: "be",
+  Bośnia: "ba",
+  Brazylia: "br",
+  Chorwacja: "hr",
+  Curaçao: "cw",
+  Czechy: "cz",
+  "DR Konga": "cd",
+  Egipt: "eg",
+  Ekwador: "ec",
+  Francja: "fr",
+  Ghana: "gh",
+  Haiti: "ht",
+  Hiszpania: "es",
+  Holandia: "nl",
+  Irak: "iq",
+  Iran: "ir",
+  Japonia: "jp",
+  Jordania: "jo",
+  Kanada: "ca",
+  Katar: "qa",
+  Kolumbia: "co",
+  "Korea Płd.": "kr",
+  Maroko: "ma",
+  Meksyk: "mx",
+  Niemcy: "de",
+  Norwegia: "no",
+  "Nowa Zelandia": "nz",
+  Panama: "pa",
+  Paragwaj: "py",
+  Portugalia: "pt",
+  RPA: "za",
+  "Rep. Ziel. Przylądka": "cv",
+  Senegal: "sn",
+  Szkocja: "gb-sct",
+  Szwajcaria: "ch",
+  Szwecja: "se",
+  Tunezja: "tn",
+  Turcja: "tr",
+  USA: "us",
+  Urugwaj: "uy",
+  Uzbekistan: "uz",
+  "Wyb. K. Słoniowej": "ci",
+};
+
+/** Kod ISO dla flagcdn na podstawie nazwy drużyny z bazy. null = placeholder (TBD/puchar). */
+export function teamCode(name?: string | null): string | null {
+  if (!name) return null;
+  return NAME_TO_CODE[name] ?? null;
+}

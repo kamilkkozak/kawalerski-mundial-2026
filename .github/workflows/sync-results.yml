@@ -1,0 +1,29 @@
+name: Sync match results
+
+# Darmowy cron (zamiast Vercel Cron na planie Hobby, który chodzi ~1x/dzień).
+# Uderza w endpoint /api/cron/sync-results co 5 min z nagłówkiem Bearer <CRON_SECRET>.
+#
+# Wymaga dwóch sekretów repo (Settings -> Secrets and variables -> Actions):
+#   APP_URL      = https://TWOJA-APKA.vercel.app   (bez ukośnika na końcu)
+#   CRON_SECRET  = ta sama wartość co zmienna CRON_SECRET na Vercel
+
+on:
+  schedule:
+    - cron: "*/5 * * * *" # co 5 min (GitHub bywa opóźniony o kilka min — to OK)
+  workflow_dispatch: {} # pozwala odpalić ręcznie z zakładki Actions
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call sync-results endpoint
+        run: |
+          code=$(curl -sS -o /tmp/body.txt -w "%{http_code}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${APP_URL}/api/cron/sync-results")
+          echo "HTTP $code"
+          cat /tmp/body.txt
+          test "$code" = "200"
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
