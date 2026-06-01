@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import type { Match, Player, Prediction, BonusPick, Settings, StandingRow } from "@/lib/types";
 
@@ -15,9 +15,15 @@ export default async function HomePage() {
   // Wiersz gracza (tworzony triggerem przy rejestracji; fallback gdyby go brakło).
   let { data: me } = await supabase.from("players").select("*").eq("id", user.id).single();
   if (!me) {
-    await supabase
-      .from("players")
-      .insert({ id: user.id, name: user.email?.split("@")[0] ?? "Gracz", email: user.email });
+    // Dotwórz brakujący wiersz przez service_role (RLS nie ma polityki INSERT na players).
+    // Self-healing dla kont auth bez wiersza w players (np. po czyszczeniu danych).
+    const admin = createServiceClient();
+    const name =
+      (user.user_metadata?.name as string | undefined)?.trim() ||
+      user.email?.split("@")[0] ||
+      "Gracz";
+    await admin.from("players").upsert({ id: user.id, name, email: user.email }, { onConflict: "id" });
+    await admin.from("bonus_picks").upsert({ player_id: user.id }, { onConflict: "player_id" });
     ({ data: me } = await supabase.from("players").select("*").eq("id", user.id).single());
   }
 
