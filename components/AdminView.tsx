@@ -25,6 +25,18 @@ export default function AdminView({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 22, maxWidth: 760 }}>
       <div className="panel">
+        <div className="panel-head">{I.info}<h3>Backup danych</h3><span className="ph-meta">typy · bonusy · wyniki</span></div>
+        <div style={{ padding: 18, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <a href="/api/admin/export" className="btn btn-primary" style={{ flex: "0 0 auto", padding: "11px 18px", textDecoration: "none" }}>
+            {I.check} Pobierz backup (Excel)
+          </a>
+          <span style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.5, flex: 1, minWidth: 220 }}>
+            Pobiera plik <b style={{ color: "var(--text)" }}>.xlsx</b> ze wszystkimi typami, bonusami, rankingiem i wynikami. Rób to co jakiś czas dla spokoju — dane i tak żyją w bazie Supabase, niezależnie od aplikacji.
+          </span>
+        </div>
+      </div>
+
+      <div className="panel">
         <div className="panel-head">{I.cup}<h3>Wynik bonusów</h3><span className="ph-meta">rozliczane na koniec</span></div>
         <div style={{ padding: 18 }}>
           <BonusResultForm settings={settings} onChange={onChange} />
