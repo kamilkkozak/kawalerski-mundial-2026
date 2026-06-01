@@ -3,53 +3,52 @@
 import { redirect } from "next/navigation";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import {
+  emailForName,
   normalizeEmail,
   normalizeName,
   passwordFromPin,
-  validateEmail,
   validateName,
   validatePin,
 } from "@/lib/auth";
 
 export type AuthState = { error?: string };
 
-// --- Rejestracja: nazwa + e-mail + PIN (z powtórzeniem) ----------------
+// --- Rejestracja: tylko nazwa + PIN (z powtórzeniem). E-mail generowany z nicku. ---
 export async function signUpAction(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const name = String(formData.get("username") ?? "");
-  const email = String(formData.get("email") ?? "");
   const pin = String(formData.get("pin") ?? "");
   const pin2 = String(formData.get("pin2") ?? "");
 
-  const invalid = validateName(name) || validateEmail(email) || validatePin(pin);
+  const invalid = validateName(name) || validatePin(pin);
   if (invalid) return { error: invalid };
   if (pin !== pin2) return { error: "PIN-y nie są takie same." };
 
   const normName = normalizeName(name);
-  const normEmail = normalizeEmail(email);
   const admin = createServiceClient();
 
-  // Nazwa musi być unikalna (logujemy się też po nazwie). Grupa mała -> porównanie w JS.
+  // Nazwa musi być unikalna (logujemy się po nazwie). Grupa mała -> porównanie w JS.
   const { data: players } = await admin.from("players").select("name");
   if ((players ?? []).some((p) => normalizeName(p.name) === normName)) {
     return { error: "Ta nazwa jest już zajęta — wybierz inną." };
   }
 
+  const email = emailForName(name);
   const { error } = await admin.auth.admin.createUser({
-    email: normEmail,
+    email,
     password: passwordFromPin(pin),
     email_confirm: true, // od razu potwierdzone, bez wysyłki maila
     user_metadata: { name: name.trim() },
   });
   if (error) {
     if (/already|exist|registered|duplicate/i.test(error.message)) {
-      return { error: "Ten e-mail jest już zarejestrowany — przełącz się na logowanie." };
+      return { error: "Ta nazwa jest już zajęta — przełącz się na logowanie." };
     }
     return { error: error.message };
   }
 
   const supabase = createClient();
   const { error: signInErr } = await supabase.auth.signInWithPassword({
-    email: normEmail,
+    email,
     password: passwordFromPin(pin),
   });
   if (signInErr) return { error: signInErr.message };

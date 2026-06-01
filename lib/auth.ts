@@ -1,4 +1,4 @@
-import { createHmac } from "crypto";
+import { createHash, createHmac } from "crypto";
 
 // Logowanie po nazwie LUB e-mailu + PIN. Pod spodem zostaje Supabase Auth:
 //  - e-mail (prawdziwy) = identyfikator konta w auth.users,
@@ -38,4 +38,11 @@ export function validatePin(pin: string): string | null {
 export function passwordFromPin(pin: string): string {
   const secret = process.env.AUTH_SECRET ?? "";
   return createHmac("sha256", secret).update(pin, "utf8").digest("hex");
+}
+
+// Rejestracja bez maila: techniczny, syntaktycznie poprawny e-mail z nicku (nic nie wysyłamy).
+// Unikalny tak samo jak znormalizowany nick -> kolizja = zajęta nazwa (blokowana przy rejestracji).
+export function emailForName(raw: string): string {
+  const hash = createHash("sha256").update(normalizeName(raw), "utf8").digest("hex");
+  return `u-${hash.slice(0, 40)}@mundial.local`;
 }

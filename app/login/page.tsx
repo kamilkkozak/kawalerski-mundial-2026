@@ -49,10 +49,6 @@ function SignupForm() {
         <input className="inp" name="username" required autoFocus autoComplete="username" placeholder="np. Bartonek" />
       </div>
       <div className="field">
-        <label>E-mail</label>
-        <input className="inp" name="email" type="email" required autoComplete="email" placeholder="ty@example.com" />
-      </div>
-      <div className="field">
         <label>PIN (4–6 cyfr)</label>
         <PinInput name="pin" placeholder="••••" />
       </div>
@@ -63,7 +59,7 @@ function SignupForm() {
       {state.error && <div className="auth-err">{state.error}</div>}
       <Submit mode="signup" />
       <div className="auth-foot">
-        Zapamiętaj PIN — będzie potrzebny przy logowaniu (<b>nie da się go odzyskać mailem</b>).
+        Wystarczy nick i PIN. <b>Zapamiętaj PIN</b> — będzie potrzebny przy logowaniu.
       </div>
     </form>
   );
@@ -74,8 +70,8 @@ function LoginForm() {
   return (
     <form action={action} autoComplete="off">
       <div className="field">
-        <label>Nazwa lub e-mail</label>
-        <input className="inp" name="identifier" required autoFocus autoComplete="username" placeholder="Bartonek lub ty@example.com" />
+        <label>Nazwa użytkownika</label>
+        <input className="inp" name="identifier" required autoFocus autoComplete="username" placeholder="np. Bartonek" />
       </div>
       <div className="field">
         <label>PIN</label>
