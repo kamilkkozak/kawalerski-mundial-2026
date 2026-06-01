@@ -2,94 +2,69 @@
 
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { Trophy, LogIn, UserPlus } from "lucide-react";
+import { BrandCrest } from "@/components/icons";
 import { signInAction, signUpAction, type AuthState } from "./actions";
 
-const inputCls =
-  "mt-1 w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-lime";
-const labelCls = "text-xs text-mut font-semibold uppercase tracking-wide";
+const ICON_ARROW = "M5 12h14M13 6l6 6-6 6";
+const ICON_USER =
+  "M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 7a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M19 8v6M22 11h-6";
 
-function SubmitButton({ mode }: { mode: "login" | "signup" }) {
+function Submit({ mode }: { mode: "login" | "signup" }) {
   const { pending } = useFormStatus();
+  const reg = mode === "signup";
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-lime to-lime-2 text-bg font-bold py-3 rounded-lg disabled:opacity-60"
-    >
-      {mode === "signup" ? <UserPlus size={16} /> : <LogIn size={16} />}
-      {pending
-        ? mode === "signup"
-          ? "Zakładam…"
-          : "Wchodzę…"
-        : mode === "signup"
-        ? "Załóż konto"
-        : "Zaloguj się"}
+    <button type="submit" className="auth-submit" disabled={pending}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+        <path d={reg ? ICON_USER : ICON_ARROW} />
+      </svg>
+      <span>
+        {pending ? (reg ? "Zakładam…" : "Wchodzę…") : reg ? "Załóż konto" : "Zaloguj się"}
+      </span>
     </button>
   );
 }
 
-function PinField({
-  name,
-  label,
-  placeholder,
-}: {
-  name: string;
-  label: string;
-  placeholder: string;
-}) {
+function PinInput({ name, placeholder }: { name: string; placeholder: string }) {
   return (
-    <div>
-      <label className={labelCls}>{label}</label>
-      <input
-        type="password"
-        name={name}
-        required
-        inputMode="numeric"
-        autoComplete="off"
-        pattern="\d{4,6}"
-        maxLength={6}
-        placeholder={placeholder}
-        className={`${inputCls} tracking-[0.3em]`}
-      />
-    </div>
+    <input
+      className="inp pin"
+      name={name}
+      type="password"
+      required
+      inputMode="numeric"
+      autoComplete="off"
+      pattern="\d{4,6}"
+      maxLength={6}
+      placeholder={placeholder}
+    />
   );
 }
 
 function SignupForm() {
   const [state, action] = useFormState<AuthState, FormData>(signUpAction, {});
   return (
-    <form action={action} className="space-y-4">
-      <div>
-        <label className={labelCls}>Nazwa użytkownika</label>
-        <input
-          type="text"
-          name="username"
-          required
-          autoFocus
-          autoComplete="username"
-          placeholder="np. Bartonek"
-          className={inputCls}
-        />
+    <form action={action} autoComplete="off">
+      <div className="field">
+        <label>Nazwa użytkownika</label>
+        <input className="inp" name="username" required autoFocus autoComplete="username" placeholder="np. Bartonek" />
       </div>
-      <div>
-        <label className={labelCls}>E-mail</label>
-        <input
-          type="email"
-          name="email"
-          required
-          autoComplete="email"
-          placeholder="ty@example.com"
-          className={inputCls}
-        />
+      <div className="field">
+        <label>E-mail</label>
+        <input className="inp" name="email" type="email" required autoComplete="email" placeholder="ty@example.com" />
       </div>
-      <PinField name="pin" label="PIN (4–6 cyfr)" placeholder="••••" />
-      <PinField name="pin2" label="Powtórz PIN" placeholder="••••" />
-      {state.error && <p className="text-red text-sm">{state.error}</p>}
-      <SubmitButton mode="signup" />
-      <p className="text-[11px] text-mut text-center leading-relaxed">
-        Zapamiętaj PIN — będzie potrzebny przy logowaniu (nie da się go odzyskać mailem).
-      </p>
+      <div className="field">
+        <label>PIN (4–6 cyfr)</label>
+        <PinInput name="pin" placeholder="••••" />
+      </div>
+      <div className="field">
+        <label>Powtórz PIN</label>
+        <PinInput name="pin2" placeholder="••••" />
+      </div>
+      {state.error && <div className="auth-err">{state.error}</div>}
+      <Submit mode="signup" />
+      <div className="auth-foot">
+        Zapamiętaj PIN — będzie potrzebny przy logowaniu (<b>nie da się go odzyskać mailem</b>).
+      </div>
     </form>
   );
 }
@@ -97,25 +72,20 @@ function SignupForm() {
 function LoginForm() {
   const [state, action] = useFormState<AuthState, FormData>(signInAction, {});
   return (
-    <form action={action} className="space-y-4">
-      <div>
-        <label className={labelCls}>Nazwa lub e-mail</label>
-        <input
-          type="text"
-          name="identifier"
-          required
-          autoFocus
-          autoComplete="username"
-          placeholder="Bartonek lub ty@example.com"
-          className={inputCls}
-        />
+    <form action={action} autoComplete="off">
+      <div className="field">
+        <label>Nazwa lub e-mail</label>
+        <input className="inp" name="identifier" required autoFocus autoComplete="username" placeholder="Bartonek lub ty@example.com" />
       </div>
-      <PinField name="pin" label="PIN" placeholder="••••" />
-      {state.error && <p className="text-red text-sm">{state.error}</p>}
-      <SubmitButton mode="login" />
-      <p className="text-[11px] text-mut text-center leading-relaxed">
-        Logujesz się nazwą albo e-mailem oraz PIN-em.
-      </p>
+      <div className="field">
+        <label>PIN</label>
+        <PinInput name="pin" placeholder="••••" />
+      </div>
+      {state.error && <div className="auth-err">{state.error}</div>}
+      <Submit mode="login" />
+      <div className="auth-foot">
+        Pierwszy raz w lidze? Kliknij <b>Załóż konto</b>.
+      </div>
     </form>
   );
 }
@@ -124,40 +94,33 @@ export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "signup">("login");
 
   return (
-    <main className="min-h-screen grid place-items-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="flex items-center gap-3 mb-7 justify-center">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-lime to-lime-2 text-bg grid place-items-center shadow-[0_6px_22px_rgba(204,255,0,.35)]">
-            <Trophy size={24} strokeWidth={2.5} />
-          </div>
+    <main className="auth-page">
+      <div className="auth">
+        <div className="auth-brand">
+          <span className="brand-crest">
+            <BrandCrest size={50} />
+          </span>
           <div>
-            <h1 className="font-display text-2xl leading-none uppercase tracking-wide">
-              Kawalerski <span className="text-lime">Mundial</span>
-            </h1>
-            <p className="text-[10px] tracking-[1.5px] text-mut uppercase mt-1">
-              USA · Kanada · Meksyk — 2026
-            </p>
+            <div className="brand-name">
+              Kawalerski <b>Mundial</b>
+            </div>
+            <div className="brand-sub">USA · Kanada · Meksyk — 2026</div>
           </div>
         </div>
 
-        <div className="bg-panel border border-line rounded-2xl p-6">
-          <div className="grid grid-cols-2 gap-1 p-1 mb-5 bg-panel2 border border-line rounded-lg">
-            {(["login", "signup"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMode(m)}
-                className={`py-2 rounded-md text-sm font-semibold transition-colors ${
-                  mode === m ? "bg-lime text-bg" : "text-mut hover:text-txt"
-                }`}
-              >
-                {m === "login" ? "Logowanie" : "Załóż konto"}
+        <div className="auth-card">
+          <div className="auth-card-inner">
+            <div className="auth-tabs">
+              <button type="button" className={`auth-tab ${mode === "login" ? "on" : ""}`} onClick={() => setMode("login")}>
+                Logowanie
               </button>
-            ))}
-          </div>
+              <button type="button" className={`auth-tab ${mode === "signup" ? "on" : ""}`} onClick={() => setMode("signup")}>
+                Załóż konto
+              </button>
+            </div>
 
-          {/* key wymusza reset stanu formularza przy zmianie trybu */}
-          {mode === "signup" ? <SignupForm key="signup" /> : <LoginForm key="login" />}
+            {mode === "signup" ? <SignupForm key="signup" /> : <LoginForm key="login" />}
+          </div>
         </div>
       </div>
     </main>

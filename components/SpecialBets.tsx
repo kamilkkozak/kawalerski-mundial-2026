@@ -20,7 +20,10 @@ const SCORER_HINTS = [
   { name: "Robert Lewandowski", team: "Polska" },
 ];
 
+// Jeden komponent, dwa widoki (mode). Oba zapisują przez set_bonus(champion, scorer),
+// więc pole nieedytowane w danym widoku przepuszczamy z `bonus` (źródło prawdy w AppShell).
 export default function SpecialBets({
+  mode,
   bonus,
   setBonus,
   settings,
@@ -28,6 +31,7 @@ export default function SpecialBets({
   now,
   onToast,
 }: {
+  mode: "champion" | "scorer";
   bonus: BonusPick;
   setBonus: (b: BonusPick) => void;
   settings: Settings | null;
@@ -65,15 +69,14 @@ export default function SpecialBets({
     persist(champ, val);
   }
 
-  return (
-    <div>
-      <div className="board-head">
-        <div className="hint">
-          Dwa typy za <b>cały turniej</b>: mistrz świata i król strzelców. Każdy trafiony to <b>+10 pkt</b> na koniec. Deadline: pierwszy gwizdek mistrzostw.
+  if (mode === "champion") {
+    return (
+      <div>
+        <div className="board-head">
+          <div className="hint">
+            Typ za <b>cały turniej</b>: kto zostanie <b>mistrzem świata</b>. Trafienie to <b>+10 pkt</b> na koniec. Deadline: pierwszy gwizdek mistrzostw.
+          </div>
         </div>
-      </div>
-
-      <div className="special-grid">
         <div className="special-card">
           <h3>{I.cup} Mistrz świata <span className="sc-bonus">+10 pkt</span></h3>
           <div className="sc-sub">
@@ -89,36 +92,50 @@ export default function SpecialBets({
               </button>
             ))}
           </div>
-        </div>
-
-        <div className="special-card">
-          <h3>{I.star} Król strzelców <span className="sc-bonus">+10 pkt</span></h3>
-          <div className="sc-sub">
-            {locked ? <>Twój typ: <b style={{ color: "var(--accent)" }}>{scorer || "—"}</b>. <span style={{ color: "var(--warn)" }}>Zablokowany.</span></> : "Wpisz nazwisko zawodnika (dowolne)."}
-          </div>
-          <input
-            className="scorer-input"
-            value={scorer}
-            disabled={locked}
-            placeholder="np. Lewandowski"
-            onChange={(e) => setScorer(e.target.value)}
-            onBlur={(e) => commitScorer(e.target.value)}
-          />
-          {!locked && (
-            <div className="scorer-chips">
-              {SCORER_HINTS.map((s) => (
-                <button key={s.name} className="scorer-chip" onClick={() => { setScorer(s.name); commitScorer(s.name); }}>
-                  {s.name}
-                </button>
-              ))}
-            </div>
-          )}
-          {settings?.top_scorer_result && (
+          {settings?.champion_result && (
             <div style={{ marginTop: 14, fontSize: 12, color: "var(--muted)" }}>
-              Oficjalny król strzelców: <b style={{ color: "var(--text)" }}>{settings.top_scorer_result}</b>
+              Oficjalny mistrz: <b style={{ color: "var(--text)" }}>{settings.champion_result}</b>
             </div>
           )}
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="board-head">
+        <div className="hint">
+          Typ za <b>cały turniej</b>: <b>król strzelców</b>. Trafienie to <b>+10 pkt</b> na koniec. Deadline: pierwszy gwizdek mistrzostw.
+        </div>
+      </div>
+      <div className="special-card">
+        <h3>{I.ball} Król strzelców <span className="sc-bonus">+10 pkt</span></h3>
+        <div className="sc-sub">
+          {locked ? <>Twój typ: <b style={{ color: "var(--accent)" }}>{scorer || "—"}</b>. <span style={{ color: "var(--warn)" }}>Zablokowany.</span></> : "Wpisz nazwisko zawodnika (dowolne)."}
+        </div>
+        <input
+          className="scorer-input"
+          value={scorer}
+          disabled={locked}
+          placeholder="np. Lewandowski"
+          onChange={(e) => setScorer(e.target.value)}
+          onBlur={(e) => commitScorer(e.target.value)}
+        />
+        {!locked && (
+          <div className="scorer-chips">
+            {SCORER_HINTS.map((s) => (
+              <button key={s.name} className="scorer-chip" onClick={() => { setScorer(s.name); commitScorer(s.name); }}>
+                {s.name}
+              </button>
+            ))}
+          </div>
+        )}
+        {settings?.top_scorer_result && (
+          <div style={{ marginTop: 14, fontSize: 12, color: "var(--muted)" }}>
+            Oficjalny król strzelców: <b style={{ color: "var(--text)" }}>{settings.top_scorer_result}</b>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -7,7 +7,6 @@ import { isLocked, lockAtMs } from "@/lib/scoring";
 import { fmtCountdown } from "@/lib/ui";
 import { I, BrandCrest } from "./icons";
 import Avatar from "./Avatar";
-import GroupBoard from "./GroupBoard";
 import MatchList from "./MatchList";
 import KnockoutBracket from "./KnockoutBracket";
 import SpecialBets from "./SpecialBets";
@@ -16,14 +15,14 @@ import RulesView from "./RulesView";
 import AdminView from "./AdminView";
 import PredictionModal from "./PredictionModal";
 
-type View = "groups" | "group" | "bracket" | "special" | "results" | "rules" | "admin";
+type View = "group" | "bracket" | "champion" | "scorer" | "results" | "rules" | "admin";
 
 const TITLES: Record<View, [string, string]> = {
-  groups: ["Tablica grup", "12 grup · typuj parując drużyny"],
+  results: ["Wyniki & ranking", "Klasyfikacja na żywo"],
   group: ["Faza grupowa", "72 mecze · lock 60 s przed gwizdkiem"],
   bracket: ["Drabinka turnieju", "Faza pucharowa · 1/16 → finał"],
-  special: ["Typy specjalne", "Mistrz świata + król strzelców · +10 pkt"],
-  results: ["Wyniki & ranking", "Klasyfikacja na żywo"],
+  champion: ["Mistrz świata", "Typ specjalny · +10 pkt na koniec"],
+  scorer: ["Król strzelców", "Typ specjalny · +10 pkt na koniec"],
   rules: ["Zasady", "Punktacja, deadline, pula nagród"],
   admin: ["Panel admina", "Korekta wyników + wynik bonusów"],
 };
@@ -55,7 +54,7 @@ export default function AppShell({
   initialStandings: StandingRow[];
 }) {
   const supabase = useMemo(() => createClient(), []);
-  const [view, setView] = useState<View>("groups");
+  const [view, setView] = useState<View>("group");
   const [now, setNow] = useState(() => Date.now());
   const [matches, setMatches] = useState(initialMatches);
   const [settings, setSettings] = useState(initialSettings);
@@ -137,21 +136,21 @@ export default function AppShell({
 
   const goto = (v: View) => { setView(v); setNavOpen(false); };
 
-  const NAV: { sec: string; items: { key: View; label: string; icon: keyof typeof I; date?: string; live?: boolean }[] }[] = [
-    { sec: "TYPOWANIE", items: [
-      { key: "groups", label: "Grupy", icon: "grid" },
-      { key: "group", label: "Faza grupowa", icon: "cal", date: "11–28 cze" },
-    ]},
-    { sec: "FAZA PUCHAROWA", items: [
-      { key: "bracket", label: "Drabinka turnieju", icon: "flow", date: "29 cze – 19 lip" },
-    ]},
-    { sec: "EKSTRA", items: [
-      { key: "special", label: "Mistrz & król strzelców", icon: "star" },
-      { key: "results", label: "Wyniki & ranking", icon: "trophy" },
-      { key: "rules", label: "Zasady", icon: "info" },
-    ]},
+  // jakikolwiek mecz na żywo -> badge LIVE przy Fazie grupowej
+  const anyLive = useMemo(
+    () => matches.some((m) => m.status === "IN_PLAY" || m.status === "PAUSED"),
+    [matches]
+  );
+
+  const NAV: { key: View; label: string; icon: keyof typeof I }[] = [
+    { key: "results", label: "Wyniki i ranking", icon: "trophy" },
+    { key: "group", label: "Faza grupowa", icon: "grid" },
+    { key: "bracket", label: "Faza pucharowa", icon: "flow" },
+    { key: "champion", label: "Mistrz świata", icon: "cup" },
+    { key: "scorer", label: "Król strzelców", icon: "ball" },
+    { key: "rules", label: "Zasady", icon: "info" },
   ];
-  if (me.is_admin) NAV.push({ sec: "ADMIN", items: [{ key: "admin", label: "Panel admina", icon: "cog" }] });
+  if (me.is_admin) NAV.push({ key: "admin", label: "Panel admina", icon: "cog" });
 
   return (
     <div className="app">
@@ -166,20 +165,15 @@ export default function AppShell({
         </div>
 
         <nav className="nav">
-          {NAV.map((group) => (
-            <div key={group.sec}>
-              <div className="nav-label">{group.sec}</div>
-              {group.items.map((it) => (
-                <button key={it.key} className={`nav-item ${view === it.key ? "active" : ""}`} onClick={() => goto(it.key)}>
-                  {I[it.icon]}
-                  <span>{it.label}</span>
-                  <span className="nav-meta">
-                    {it.date && <span className="nav-date">{it.date}</span>}
-                    {it.key === "results" && myIdx >= 0 && <span className="nav-badge">#{myRank}</span>}
-                  </span>
-                </button>
-              ))}
-            </div>
+          {NAV.map((it) => (
+            <button key={it.key} className={`nav-item ${view === it.key ? "active" : ""}`} onClick={() => goto(it.key)}>
+              {I[it.icon]}
+              <span>{it.label}</span>
+              <span className="nav-meta">
+                {it.key === "group" && anyLive && <span className="nav-badge live">LIVE</span>}
+                {it.key === "results" && myIdx >= 0 && <span className="nav-badge">#{myRank}</span>}
+              </span>
+            </button>
           ))}
         </nav>
 
@@ -203,7 +197,7 @@ export default function AppShell({
             <div className="crumb">{TITLES[view][1]}</div>
           </div>
           <div className="topbar-spacer" />
-          {(view === "groups" || view === "group") && nextLock && (
+          {view === "group" && nextLock && (
             <div className={`deadline-pill ${nextLock - now < 6 * 3600000 ? "urgent" : ""}`}>
               <span className="lab">Najbliższe zamknięcie:</span>
               <span className="clock">{fmtCountdown(nextLock - now)}</span>
@@ -216,11 +210,13 @@ export default function AppShell({
         </div>
 
         <div className="content">
-          {view === "groups" && <GroupBoard matches={matches} preds={preds} now={now} onOpenMatch={openMatch} />}
           {view === "group" && <MatchList matches={matches} preds={preds} now={now} onOpenMatch={openMatch} />}
           {view === "bracket" && <KnockoutBracket matches={matches} />}
-          {view === "special" && (
-            <SpecialBets bonus={bonus} setBonus={setBonus} settings={settings} matches={matches} now={now} onToast={showToast} />
+          {view === "champion" && (
+            <SpecialBets mode="champion" bonus={bonus} setBonus={setBonus} settings={settings} matches={matches} now={now} onToast={showToast} />
+          )}
+          {view === "scorer" && (
+            <SpecialBets mode="scorer" bonus={bonus} setBonus={setBonus} settings={settings} matches={matches} now={now} onToast={showToast} />
           )}
           {view === "results" && <ResultsView standings={standings} meId={me.id} matches={matches} preds={preds} />}
           {view === "rules" && <RulesView />}
