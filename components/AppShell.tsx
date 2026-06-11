@@ -218,7 +218,19 @@ export default function AppShell({
     refetchBets(); // odśwież widok "Typy kawalerów" od razu
   }
 
-  const goto = (v: View) => { setView(v); setNavOpen(false); };
+  const goto = (v: View) => {
+    setView(v);
+    setNavOpen(false);
+    try { localStorage.setItem("mundial.view", v); } catch {}
+  };
+
+  // Po odświeżeniu wróć do ostatnio otwartej zakładki (po zamontowaniu — anti hydration mismatch).
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("mundial.view") as View | null;
+      if (saved && saved in TITLES && !(saved === "admin" && !me.is_admin)) setView(saved);
+    } catch {}
+  }, [me.is_admin]);
 
   // jakikolwiek mecz na żywo -> badge LIVE przy Fazie grupowej
   const anyLive = useMemo(

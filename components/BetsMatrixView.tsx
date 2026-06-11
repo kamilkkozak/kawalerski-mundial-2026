@@ -138,6 +138,7 @@ function MatchBets({
   const finished = isFinished(m);
   const live = isLive(m);
   const locked = finished || isLocked(m.kickoff, now);
+  const hasScore = m.score1 != null && m.score2 != null; // wynik (live lub końcowy)
   // "obstawił" = jest w statusSet (RPC presence) LUB mamy widoczną wartość (mój typ / po blokadzie)
   const hasBet = (pid: string) => statusSet.has(`${pid}|${m.id}`) || predValues.has(`${pid}|${m.id}`);
   const predictedCount = players.reduce((n, p) => n + (hasBet(p.id) ? 1 : 0), 0);
@@ -171,12 +172,14 @@ function MatchBets({
           const val = predValues.get(key);
           const predicted = statusSet.has(key) || !!val;
           const isMe = p.id === meId;
-          const pts = finished && val ? scoreMatch({ a: val.pred1, b: val.pred2 }, { a: m.score1, b: m.score2 }) : null;
+          // punkty dla wytypowanego wyniku, gdy mecz ma wynik (live lub końcowy)
+          const pts = val && hasScore ? scoreMatch({ a: val.pred1, b: val.pred2 }, { a: m.score1, b: m.score2 }) : null;
+          const ptsCls = pts === 3 ? "p3" : pts === 1 ? "p1" : pts === 0 ? "p0" : "";
 
           let cell: React.ReactNode;
           if (locked) {
             cell = val
-              ? <span className="bm-pick val">{val.pred1}:{val.pred2}</span>
+              ? <span className={`bm-pick val ${ptsCls}`}>{val.pred1}:{val.pred2}</span>
               : <span className="bm-pick none">nie typował</span>;
           } else if (isMe && val) {
             cell = <span className="bm-pick val mine">{val.pred1}:{val.pred2}</span>;

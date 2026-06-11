@@ -695,14 +695,17 @@ input, select { font-family: inherit; }
 .bm-pname { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bm-pick { font-weight: 800; font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bm-pick.val { color: var(--text); }
+.bm-pick.val.p3 { color: #37ff6b; }            /* mocno zielony — dokładny wynik (3 pkt) */
+.bm-pick.val.p1 { color: var(--good); }        /* zielono-turkusowy (jak kropka) — rezultat (1 pkt) */
+.bm-pick.val.p0 { color: var(--bad); }         /* czerwony — pudło (0 pkt) */
 .bm-pick.mine { color: var(--accent); }
 .bm-pick.hidden { display: inline-flex; align-items: center; gap: 4px; color: var(--faint); }
 .bm-pick.hidden b { letter-spacing: 1px; }
 .bm-pick.none { color: var(--faint); }
 .bm-pts { font-weight: 800; font-size: 11px; padding: 2px 7px; border-radius: 6px; flex: none; }
-.bm-pts.p3 { color: var(--good); background: color-mix(in srgb, var(--good) 15%, transparent); }
-.bm-pts.p1 { color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, transparent); }
-.bm-pts.p0 { color: var(--muted); background: var(--surface-3); }
+.bm-pts.p3 { color: #37ff6b; background: color-mix(in srgb, #37ff6b 15%, transparent); }
+.bm-pts.p1 { color: var(--good); background: color-mix(in srgb, var(--good) 15%, transparent); }
+.bm-pts.p0 { color: var(--bad); background: color-mix(in srgb, var(--bad) 13%, transparent); }
 
 @media (max-width: 560px) {
   .bm-players { grid-template-columns: 1fr; }
