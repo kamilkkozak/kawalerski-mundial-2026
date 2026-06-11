@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Match, PredMap, StandingRow } from "@/lib/types";
 import { scoreMatch } from "@/lib/scoring";
-import { fmtTime } from "@/lib/ui";
 import { I } from "./icons";
 import Flag from "./Flag";
 import Avatar from "./Avatar";
+import RankEmblem from "./RankEmblem";
 
 const PRIZES = [500, 250, 150];
 
@@ -33,7 +33,7 @@ export default function ResultsView({
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
         <LivePanel matches={matches} now={now} />
-        <PotPanel standings={standings} avatars={avatars} />
+        <MatchHistory matches={matches} now={now} />
       </div>
     </div>
   );
@@ -58,12 +58,15 @@ function Leaderboard({ standings, meId, avatars }: { standings: StandingRow[]; m
         const podium = rank <= 3 ? `podium-${rank}` : "";
         return (
           <div key={p.player_id} className={`lb-row ${podium} ${p.player_id === meId ? "me" : ""}`}>
-            <span className="lb-rank">{rank}</span>
+            {rank <= 3
+              ? <span className="lb-rank emblem"><RankEmblem rank={rank} size={50} /></span>
+              : <span className="lb-rank">{rank}</span>}
             <Avatar name={p.name} seed={p.player_id} size={36} avatarUrl={avatars[p.player_id]} />
             <span className="lb-name">
               {p.name}
               <small>{p.exact}× dokładny wynik · {Math.max(0, p.hits - p.exact)}× trafiony rezultat{p.bonus_points > 0 ? ` · +${p.bonus_points} bonus` : ""}</small>
             </span>
+            {rank <= 3 ? <span className="lb-prize">{PRIZES[rank - 1]} zł</span> : <span />}
             <span className="lb-pts">{p.points}<small>pkt</small></span>
           </div>
         );
@@ -73,45 +76,15 @@ function Leaderboard({ standings, meId, avatars }: { standings: StandingRow[]; m
   );
 }
 
-function PotPanel({ standings, avatars }: { standings: StandingRow[]; avatars: Record<string, string | null> }) {
-  return (
-    <div className="panel">
-      <div className="panel-head">{I.cup}<h3>Pula nagród</h3></div>
-      <div style={{ padding: "6px 0" }}>
-        {PRIZES.map((zl, i) => {
-          const who = standings[i];
-          return (
-            <div key={i} className={`lb-row podium-${i + 1}`}>
-              <span className="lb-rank">{i + 1}</span>
-              {who ? <Avatar name={who.name} seed={who.player_id} size={34} avatarUrl={avatars[who.player_id]} /> : <span className="avatar" style={{ width: 34, height: 34, background: "var(--surface-3)" }} />}
-              <span className="lb-name">{who ? who.name : "—"}</span>
-              <span className="lb-prize" style={{ fontSize: 13, padding: "4px 11px" }}>{zl} zł</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function LivePanel({ matches, now }: { matches: Match[]; now: number }) {
   // "live" zależy od czasu — liczymy je dopiero po zamontowaniu (anti hydration mismatch).
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const { live, recent } = useMemo(() => {
-    // "Trwa" = w oknie czasowym (od gwizdka do +130 min), niezależnie od statusu/API.
-    // Wynik nakładamy z bazy (admin/API). Etykieta wg statusu (KONIEC gdy FINISHED).
-    const live = mounted
-      ? matches.filter((m) => inLiveWindow(m, now)).sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff))
-      : [];
-    // "Rozegrane" = FINISHED z wynikiem, ale już poza oknem (żeby nie dublować z live).
-    const recent = matches
-      .filter((m) => isDoneWithScore(m) && !inLiveWindow(m, now))
-      .sort((a, b) => +new Date(b.kickoff) - +new Date(a.kickoff))
-      .slice(0, 5);
-    return { live, recent };
-  }, [matches, now, mounted]);
+  const live = useMemo(
+    () => (mounted ? matches.filter((m) => inLiveWindow(m, now)).sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff)) : []),
+    [matches, now, mounted]
+  );
 
   return (
     <div className="panel">
@@ -119,8 +92,8 @@ function LivePanel({ matches, now }: { matches: Match[]; now: number }) {
         <span style={{ display: "inline-flex", width: 10, height: 10, borderRadius: "50%", background: "var(--bad)", animation: "pulse 1.2s infinite" }} />
         <h3>Na żywo</h3>
       </div>
-      {live.length === 0 && recent.length === 0 && (
-        <div style={{ padding: 22, color: "var(--muted)", fontSize: 13 }}>Brak meczów na żywo ani rozegranych.</div>
+      {live.length === 0 && (
+        <div style={{ padding: 22, color: "var(--muted)", fontSize: 13 }}>Brak meczów na żywo.</div>
       )}
       {live.map((m) => (
         <div key={m.id} className="live-row" style={{ background: "color-mix(in srgb, var(--bad) 8%, transparent)" }}>
@@ -134,16 +107,42 @@ function LivePanel({ matches, now }: { matches: Match[]; now: number }) {
           <Flag name={m.team2} />
         </div>
       ))}
-      {recent.map((m) => (
-        <div key={m.id} className="live-row">
-          <span className="lr-min ft">KONIEC</span>
-          <Flag name={m.team1} />
-          <span className="lr-team">{m.team1}</span>
-          <span className="lr-score" style={{ color: "var(--muted)" }}>{m.score1}:{m.score2}</span>
-          <span className="lr-team away">{m.team2}</span>
-          <Flag name={m.team2} />
+    </div>
+  );
+}
+
+// Historia rozegranych meczów (FINISHED z wynikiem, poza oknem live), najnowsze u góry.
+function MatchHistory({ matches, now }: { matches: Match[]; now: number }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const done = useMemo(
+    () =>
+      matches
+        .filter((m) => isDoneWithScore(m) && (!mounted || !inLiveWindow(m, now)))
+        .sort((a, b) => +new Date(b.kickoff) - +new Date(a.kickoff)),
+    [matches, now, mounted]
+  );
+
+  return (
+    <div className="panel">
+      <div className="panel-head">{I.cal}<h3>Historia meczów</h3></div>
+      {done.length === 0 ? (
+        <div style={{ padding: 22, color: "var(--muted)", fontSize: 13 }}>Brak rozegranych meczów.</div>
+      ) : (
+        <div style={{ maxHeight: "50vh", overflowY: "auto" }}>
+          {done.map((m) => (
+            <div key={m.id} className="live-row">
+              <span className="lr-min ft" suppressHydrationWarning>{new Date(m.kickoff).toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit" })}</span>
+              <Flag name={m.team1} />
+              <span className="lr-team">{m.team1}</span>
+              <span className="lr-score" style={{ color: "var(--muted)" }}>{m.score1}:{m.score2}</span>
+              <span className="lr-team away">{m.team2}</span>
+              <Flag name={m.team2} />
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }

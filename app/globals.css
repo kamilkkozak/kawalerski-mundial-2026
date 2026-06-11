@@ -383,18 +383,38 @@ input, select { font-family: inherit; }
 .panel-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
 .panel-head h3 { font-family: 'Anton', sans-serif; text-transform: uppercase; font-size: 16px; letter-spacing: 0.02em; }
 .panel-head .ph-meta { margin-left: auto; font-size: 11px; color: var(--muted); font-weight: 700; }
-.lb-row { display: grid; grid-template-columns: 30px 38px 1fr auto; align-items: center; gap: 12px; padding: 11px 18px; border-bottom: 1px solid var(--border); transition: background 0.12s; }
+.lb-row { display: grid; grid-template-columns: 54px 38px 1fr auto auto; align-items: center; gap: 12px; padding: 11px 18px; border-bottom: 1px solid var(--border); transition: background 0.12s; }
 .lb-row:last-child { border-bottom: none; }
 .lb-row.me { background: color-mix(in srgb, var(--accent) 9%, transparent); }
 .lb-rank { font-family: 'Anton', sans-serif; font-size: 19px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
-.lb-row.podium-1 .lb-rank { color: #ffd24a; }
-.lb-row.podium-2 .lb-rank { color: #cdd6e6; }
-.lb-row.podium-3 .lb-rank { color: #e0915a; }
+.lb-rank.emblem { display: grid; place-items: center; overflow: visible; }
+/* podium — medalowe (1 złoto / 2 srebro / 3 brąz) */
+.lb-row.podium-1 { background: linear-gradient(90deg, rgba(255,207,90,.13), transparent 65%); box-shadow: inset 3px 0 0 #ffcf5a, inset 0 0 22px -10px rgba(255,207,90,.5); }
+.lb-row.podium-2 { background: linear-gradient(90deg, rgba(140,210,255,.11), transparent 65%); box-shadow: inset 3px 0 0 #cfe0f2; }
+.lb-row.podium-3 { background: linear-gradient(90deg, rgba(255,122,54,.11), transparent 65%); box-shadow: inset 3px 0 0 #e07a3a; }
+.lb-row.podium-1 .lb-prize { color: #3a2a05; background: linear-gradient(135deg, #ffe9a8, #ffd66a); }
+.lb-row.podium-2 .lb-prize { color: #1d2733; background: linear-gradient(135deg, #e6eef8, #c7d4e4); }
+.lb-row.podium-3 .lb-prize { color: #3a1c0a; background: linear-gradient(135deg, #efbd91, #d98a52); }
+
+/* Emblematy rang — energia (animacje). Wyłączone przy prefers-reduced-motion. */
+.rank-emb { display: inline-flex; line-height: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .rank-emb .core { animation: rankpulse 2.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .rank-emb .spark { animation: ranktw 1.8s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .rank-emb .spark.b { animation-duration: 2.3s; animation-delay: .4s; }
+  .rank-emb .spark.c { animation-duration: 1.5s; animation-delay: .9s; }
+  .rank-emb .shine { animation: ranksweep 3.4s ease-in-out infinite; }
+  .rank-emb .arc { animation: rankflick 2.1s steps(1) infinite; }
+}
+@keyframes rankpulse { 0%,100% { opacity:.5; transform:scale(.92); } 50% { opacity:.95; transform:scale(1.06); } }
+@keyframes ranktw { 0%,100% { opacity:.15; transform:scale(.6); } 50% { opacity:1; transform:scale(1.1); } }
+@keyframes ranksweep { 0%,100% { opacity:0; } 45% { opacity:0; } 55% { opacity:.8; } 70% { opacity:0; } }
+@keyframes rankflick { 0%,100% { opacity:.9; } 33% { opacity:.45; } 66% { opacity:1; } }
 .lb-name { font-weight: 800; font-size: 14px; display: flex; flex-direction: column; gap: 1px; }
 .lb-name small { font-weight: 600; font-size: 10.5px; color: var(--faint); }
 .lb-pts { font-family: 'Anton', sans-serif; font-size: 22px; font-variant-numeric: tabular-nums; min-width: 44px; text-align: right; }
 .lb-pts small { font-family: 'Archivo'; font-size: 10px; color: var(--muted); font-weight: 700; display: block; margin-top: -2px; text-align: right; }
-.lb-prize { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: var(--surface-3); color: var(--accent); }
+.lb-prize { font-size: 11.5px; font-weight: 800; padding: 3px 10px; border-radius: 20px; background: var(--surface-3); color: var(--accent); white-space: nowrap; }
 .live-row { display: flex; align-items: center; gap: 10px; padding: 11px 18px; border-bottom: 1px solid var(--border); }
 .live-row:last-child { border-bottom: none; }
 .live-row .flag { width: 26px; height: 18px; }
