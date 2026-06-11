@@ -178,6 +178,23 @@ export default function AppShell({
     return () => clearInterval(id);
   }, [view, refetchBets]);
 
+  // Widok "Wyniki": gdy trwa mecz (okno czasowe), dociągaj wyniki z bazy co 60 s
+  // (siatka bezpieczeństwa obok realtime; czyta tylko Supabase, nie rusza limitu API).
+  const matchesRef = useRef(matches);
+  matchesRef.current = matches;
+  useEffect(() => {
+    if (view !== "results") return;
+    const id = setInterval(() => {
+      const t = Date.now();
+      const anyInWindow = matchesRef.current.some((m) => {
+        const k = +new Date(m.kickoff);
+        return t >= k && t < k + 130 * 60 * 1000;
+      });
+      if (anyInWindow) { refetchMatches(); refetchStandings(); }
+    }, 60000);
+    return () => clearInterval(id);
+  }, [view, refetchMatches, refetchStandings]);
+
   // moje miejsce + punkty z rankingu
   const myIdx = standings.findIndex((s) => s.player_id === me.id);
   const myPoints = myIdx >= 0 ? standings[myIdx].points : 0;
@@ -296,7 +313,7 @@ export default function AppShell({
           {view === "scorer" && (
             <SpecialBets mode="scorer" bonus={bonus} setBonus={setBonus} settings={settings} matches={matches} now={now} onToast={showToast} scorers={scorers} />
           )}
-          {view === "results" && <ResultsView standings={standings} meId={me.id} matches={matches} preds={preds} avatars={avatars} />}
+          {view === "results" && <ResultsView standings={standings} meId={me.id} matches={matches} preds={preds} avatars={avatars} now={now} />}
           {view === "bets" && (
             <BetsMatrixView matches={matches} players={playersLive} statusSet={betStatus} predValues={betPreds} meId={me.id} now={now} onOpenMatch={openMatch} />
           )}

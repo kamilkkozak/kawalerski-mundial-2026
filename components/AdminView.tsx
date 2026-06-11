@@ -198,11 +198,11 @@ function AdminMatchRow({ match, onChange }: { match: Match; onChange: () => void
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
 
-  function save() {
+  function save(status: "IN_PLAY" | "FINISHED") {
     startTransition(async () => {
       const v1 = s1 === "" ? null : parseInt(s1, 10);
       const v2 = s2 === "" ? null : parseInt(s2, 10);
-      const res = await adminSetResult(match.id, v1, v2, "FINISHED");
+      const res = await adminSetResult(match.id, v1, v2, status);
       if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 1200); onChange(); }
     });
   }
@@ -216,7 +216,8 @@ function AdminMatchRow({ match, onChange }: { match: Match; onChange: () => void
       <input className="admin-score" inputMode="numeric" value={s2} onChange={(e) => /^\d?\d?$/.test(e.target.value) && setS2(e.target.value)} />
       <span className="admin-team">{match.team2}</span>
       <span className={`admin-status ${match.status === "FINISHED" ? "fin" : ""}`}>{match.status}</span>
-      <button className="admin-save" disabled={pending} onClick={save}>{saved ? "✓" : I.check}</button>
+      <button className="admin-live" disabled={pending} onClick={() => save("IN_PLAY")} title="Zapisz wynik na żywo (mecz trwa)">LIVE</button>
+      <button className="admin-save" disabled={pending} onClick={() => save("FINISHED")} title="Zapisz wynik końcowy">{saved ? "✓" : I.check}</button>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Match, PredMap, StandingRow } from "@/lib/types";
 import { scoreMatch } from "@/lib/scoring";
 import { fmtTime } from "@/lib/ui";
@@ -16,12 +16,14 @@ export default function ResultsView({
   matches,
   preds,
   avatars,
+  now,
 }: {
   standings: StandingRow[];
   meId: string;
   matches: Match[];
   preds: PredMap;
   avatars: Record<string, string | null>;
+  now: number;
 }) {
   return (
     <div className="results-grid">
@@ -30,11 +32,21 @@ export default function ResultsView({
         <MyBets matches={matches} preds={preds} />
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-        <LivePanel matches={matches} />
+        <LivePanel matches={matches} now={now} />
         <PotPanel standings={standings} avatars={avatars} />
       </div>
     </div>
   );
+}
+
+// Okno "na żywo": od gwizdka do +130 min (margines na doliczony czas/przerwę).
+const LIVE_WINDOW_MS = 130 * 60 * 1000;
+function inLiveWindow(m: Match, now: number): boolean {
+  const k = +new Date(m.kickoff); // kickoff jest w UTC (ISO z Z) — porównanie ms epoch jest strefowo bezpieczne
+  return now >= k && now < k + LIVE_WINDOW_MS;
+}
+function isDoneWithScore(m: Match): boolean {
+  return m.status === "FINISHED" && m.score1 != null && m.score2 != null;
 }
 
 function Leaderboard({ standings, meId, avatars }: { standings: StandingRow[]; meId: string; avatars: Record<string, string | null> }) {
@@ -82,15 +94,24 @@ function PotPanel({ standings, avatars }: { standings: StandingRow[]; avatars: R
   );
 }
 
-function LivePanel({ matches }: { matches: Match[] }) {
+function LivePanel({ matches, now }: { matches: Match[]; now: number }) {
+  // "live" zależy od czasu — liczymy je dopiero po zamontowaniu (anti hydration mismatch).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const { live, recent } = useMemo(() => {
-    const live = matches.filter((m) => m.status === "IN_PLAY" || m.status === "PAUSED");
+    // "Trwa" = w oknie czasowym (od gwizdka do +130 min), niezależnie od statusu/API.
+    // Wynik nakładamy z bazy (admin/API). Etykieta wg statusu (KONIEC gdy FINISHED).
+    const live = mounted
+      ? matches.filter((m) => inLiveWindow(m, now)).sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff))
+      : [];
+    // "Rozegrane" = FINISHED z wynikiem, ale już poza oknem (żeby nie dublować z live).
     const recent = matches
-      .filter((m) => m.status === "FINISHED" && m.score1 != null)
+      .filter((m) => isDoneWithScore(m) && !inLiveWindow(m, now))
       .sort((a, b) => +new Date(b.kickoff) - +new Date(a.kickoff))
       .slice(0, 5);
     return { live, recent };
-  }, [matches]);
+  }, [matches, now, mounted]);
 
   return (
     <div className="panel">
@@ -103,7 +124,9 @@ function LivePanel({ matches }: { matches: Match[] }) {
       )}
       {live.map((m) => (
         <div key={m.id} className="live-row" style={{ background: "color-mix(in srgb, var(--bad) 8%, transparent)" }}>
-          <span className="lr-min"><span className="dot" />LIVE</span>
+          {m.status === "FINISHED"
+            ? <span className="lr-min ft">KONIEC</span>
+            : <span className="lr-min"><span className="dot" />LIVE</span>}
           <Flag name={m.team1} />
           <span className="lr-team">{m.team1}</span>
           <span className="lr-score">{m.score1 ?? 0}:{m.score2 ?? 0}</span>
