@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import type { Match, Stage } from "@/lib/types";
+import { LAYOUT, refLabel, isResolved } from "@/lib/bracket";
 import { I } from "./icons";
 import Flag from "./Flag";
 
@@ -19,6 +20,7 @@ const y4 = mid(baseY);
 const y2 = mid(y4);
 const y1 = mid(y2);
 
+type RoundKey = "r32" | "r16" | "qf" | "sf";
 type Col = { gi: number; side: "L" | "R" | "C"; round: Stage; n: number; ys: number[] };
 const COLS: Col[] = [
   { gi: 0, side: "L", round: "r32", n: 8, ys: baseY },
@@ -39,25 +41,27 @@ const shortDate = (iso: string) => {
   return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
-export default function KnockoutBracket({ matches }: { matches: Match[] }) {
-  const byStage = useMemo(() => {
-    const m: Record<string, Match[]> = {};
-    matches
-      .filter((x) => x.stage !== "group")
-      .forEach((x) => {
-        (m[x.stage] ||= []).push(x);
-      });
-    Object.values(m).forEach((list) => list.sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff)));
+export default function KnockoutBracket({
+  matches,
+  onOpenMatch,
+}: {
+  matches: Match[];
+  onOpenMatch: (m: Match) => void;
+}) {
+  // Mapa kod meczu -> mecz (układ drabinki sterowany kodami, nie kolejnością czasu).
+  const byCode = useMemo(() => {
+    const m = new Map<string, Match>();
+    matches.forEach((x) => x.bracket_code && m.set(x.bracket_code, x));
     return m;
   }, [matches]);
 
-  const hasAny = Object.keys(byStage).length > 0;
+  const hasAny = matches.some((x) => x.stage !== "group");
 
   function getMatch(col: Col, i: number): Match | undefined {
-    const list = byStage[col.round] ?? [];
-    if (col.round === "final" || col.side === "C") return list[0];
-    const offset = col.side === "L" ? 0 : col.n; // prawa połowa = druga część listy
-    return list[offset + i];
+    if (col.round === "final") return byCode.get(LAYOUT.final);
+    const side = col.side === "L" ? LAYOUT.L : LAYOUT.R;
+    const code = side[col.round as RoundKey]?.[i];
+    return code ? byCode.get(code) : undefined;
   }
 
   const nodes: { col: Col; i: number; x: number; y: number; match?: Match }[] = [];
@@ -97,7 +101,7 @@ export default function KnockoutBracket({ matches }: { matches: Match[] }) {
 
   const W = xAt(8) + KB.NODE_W;
   const H = baseY[7] + KB.NODE_H / 2 + 110;
-  const third = byStage["third"]?.[0];
+  const third = byCode.get(LAYOUT.third);
 
   if (!hasAny) {
     return (
@@ -110,12 +114,6 @@ export default function KnockoutBracket({ matches }: { matches: Match[] }) {
 
   return (
     <div>
-      <div className="board-head">
-        <div className="hint">
-          Pełna drabinka — od <b>1/16 finału</b> po <b>FINAŁ</b> w centrum. Drużyny i pary uzupełnią się <b>automatycznie</b> po fazie grupowej (dane z football-data.org). Typowanie meczów pucharowych włączymy, gdy pary będą znane.
-        </div>
-      </div>
-
       <div className="kb-scroll">
         <div className="kb-stage" style={{ width: W, height: H }}>
           {COLS.map((col) => (
@@ -131,15 +129,11 @@ export default function KnockoutBracket({ matches }: { matches: Match[] }) {
           </svg>
 
           {nodes.map((n, i) => (
-            <KbNode key={i} col={n.col} x={n.x} y={n.y} match={n.match} />
+            <KbNode key={i} col={n.col} x={n.x} y={n.y} match={n.match} onOpen={onOpenMatch} />
           ))}
 
           {third && (
-            <div className="kb-third" style={{ left: xAt(4) - 12, top: yC + 92, width: KB.NODE_W + 24 }}>
-              <div className="kb-hex" />
-              <div className="kb-hex inner" />
-              <div className="kb-rows"><div className="kb-third-lab">MECZ O 3. MIEJSCE<small>{shortDate(third.kickoff)}</small></div></div>
-            </div>
+            <ThirdNode match={third} left={xAt(4) - 12} top={yC + 92} width={KB.NODE_W + 24} onOpen={onOpenMatch} />
           )}
         </div>
       </div>
@@ -147,11 +141,19 @@ export default function KnockoutBracket({ matches }: { matches: Match[] }) {
   );
 }
 
-function KbNode({ col, x, y, match }: { col: Col; x: number; y: number; match?: Match }) {
+function KbNode({
+  col, x, y, match, onOpen,
+}: { col: Col; x: number; y: number; match?: Match; onOpen: (m: Match) => void }) {
   const isFinal = col.round === "final";
-  const known = (t?: string | null) => t && t !== "TBD";
+  const resolved = match ? isResolved(match.team1, match.team2) : false;
+  const hasResult = !!match && match.score1 != null && match.score2 != null && match.status === "FINISHED";
+  const clickable = !!match && (resolved || hasResult);
   return (
-    <div className={`kb-node ${isFinal ? "final" : ""}`} style={{ left: x, top: y - KB.NODE_H / 2, width: KB.NODE_W }}>
+    <div
+      className={`kb-node ${isFinal ? "final" : ""}`}
+      style={{ left: x, top: y - KB.NODE_H / 2, width: KB.NODE_W, cursor: clickable ? "pointer" : "default" }}
+      onClick={() => clickable && match && onOpen(match)}
+    >
       <div className="kb-hex" />
       <div className="kb-hex inner" />
       <div className="kb-rows">
@@ -165,8 +167,8 @@ function KbNode({ col, x, y, match }: { col: Col; x: number; y: number; match?: 
           </div>
         ) : (
           <>
-            <Slot name={match?.team1} score={match?.score1} known={!!known(match?.team1)} when={match ? shortDate(match.kickoff) : undefined} />
-            <Slot name={match?.team2} score={match?.score2} known={!!known(match?.team2)} />
+            <Slot name={match?.team1} slotRef={match?.home_ref} score={match?.score1} when={match ? shortDate(match.kickoff) : undefined} />
+            <Slot name={match?.team2} slotRef={match?.away_ref} score={match?.score2} />
           </>
         )}
       </div>
@@ -174,11 +176,28 @@ function KbNode({ col, x, y, match }: { col: Col; x: number; y: number; match?: 
   );
 }
 
-function Slot({ name, score, known, when }: { name?: string | null; score?: number | null; known: boolean; when?: string }) {
+function ThirdNode({
+  match, left, top, width, onOpen,
+}: { match: Match; left: number; top: number; width: number; onOpen: (m: Match) => void }) {
+  const resolved = isResolved(match.team1, match.team2);
+  const hasResult = match.score1 != null && match.score2 != null && match.status === "FINISHED";
+  const clickable = resolved || hasResult;
+  return (
+    <div className="kb-third" style={{ left, top, width, cursor: clickable ? "pointer" : "default" }} onClick={() => clickable && onOpen(match)}>
+      <div className="kb-hex" />
+      <div className="kb-hex inner" />
+      <div className="kb-rows"><div className="kb-third-lab">MECZ O 3. MIEJSCE<small>{shortDate(match.kickoff)}</small></div></div>
+    </div>
+  );
+}
+
+// `slotRef` to deskryptor slotu (np. "1E", "W73") — pokazywany gdy drużyna nieznana.
+function Slot({ name, slotRef, score, when }: { name?: string | null; slotRef?: string | null; score?: number | null; when?: string }) {
+  const known = !!name && name !== "TBD";
   return (
     <div className={`kb-slot ${known ? "" : "dim"}`}>
       {known ? <Flag name={name} /> : <span className="kb-dot" />}
-      <span className={known ? "kb-team" : "kb-tbd"}>{known ? name : "do ustalenia"}</span>
+      <span className={known ? "kb-team" : "kb-tbd"}>{known ? name : refLabel(slotRef)}</span>
       {score != null && <span className="kb-seed">{score}</span>}
       {when && <span className="kb-when">{when}</span>}
     </div>

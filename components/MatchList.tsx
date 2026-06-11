@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Match, PredMap } from "@/lib/types";
 import { isLocked, lockAtMs } from "@/lib/scoring";
 import { fmtDay, fmtCountdown } from "@/lib/ui";
@@ -17,6 +17,11 @@ export default function MatchList({
   now: number;
   onOpenMatch: (m: Match) => void;
 }) {
+  // Odliczanie zależy od bieżącego czasu — renderujemy je dopiero po zamontowaniu,
+  // żeby SSR i hydracja nie różniły się sekundami (Next hydration mismatch).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const byDay = useMemo(() => {
     const map: Record<string, Match[]> = {};
     matches
@@ -32,35 +37,30 @@ export default function MatchList({
 
   return (
     <div>
-      <div className="board-head">
-        <div className="hint">
-          Mecze fazy grupowej wg dni. Typ wpiszesz <b>do 60 s przed gwizdkiem</b> danego meczu — potem karta się blokuje (walidacja po stronie serwera). Kliknij mecz, aby typować.
-        </div>
-      </div>
-
       {byDay.map((day) => {
-        const open = day.list.filter((m) => !isLocked(m.kickoff, now));
-        const live = day.list.some((m) => m.status === "IN_PLAY" || m.status === "PAUSED");
         let cls = "open";
         let txt = "";
-        if (live) {
-          cls = "live";
-          txt = "Trwają mecze";
-        } else if (open.length === 0) {
-          cls = "closed";
-          txt = "Typy zamknięte";
-        } else {
-          const nextLock = Math.min(...open.map((m) => lockAtMs(m.kickoff)));
-          txt = `Najbliższe zamknięcie za ${fmtCountdown(nextLock - now)}`;
+        if (mounted) {
+          const open = day.list.filter((m) => !isLocked(m.kickoff, now));
+          const live = day.list.some((m) => m.status === "IN_PLAY" || m.status === "PAUSED");
+          if (live) {
+            cls = "live";
+            txt = "Trwają mecze";
+          } else if (open.length === 0) {
+            cls = "closed";
+            txt = "Typy zamknięte";
+          } else {
+            const nextLock = Math.min(...open.map((m) => lockAtMs(m.kickoff)));
+            txt = `Najbliższe zamknięcie za ${fmtCountdown(nextLock - now)}`;
+          }
         }
         return (
           <div className="day-block" key={day.key}>
             <div className="day-head">
               <span className="dd">
                 {fmtDay(day.key + "T12:00:00")}
-                <small>{day.list.length} mecze</small>
               </span>
-              <span className={`day-deadline ${cls}`}>{txt}</span>
+              <span className={`day-deadline ${cls}`} suppressHydrationWarning>{txt}</span>
             </div>
             <div className="matches">
               {day.list.map((m) => (

@@ -94,5 +94,18 @@ export type FdMatch = {
   status: string;
   homeTeam: { name: string };
   awayTeam: { name: string };
-  score: { fullTime: { home: number | null; away: number | null } };
+  // winner uwzględnia rozstrzygnięcie po dogrywce/karnych (do progresji w drabince).
+  score: {
+    fullTime: { home: number | null; away: number | null };
+    winner?: "HOME_TEAM" | "AWAY_TEAM" | "DRAW" | null;
+  };
+  attendance?: number | null; // frekwencja (dostępna po meczu)
+};
+
+// /v4/competitions/WC/scorers — czołówka strzelców (darmowy plan: ~top 10, z opóźnieniem).
+export type FdScorer = {
+  player?: { id?: number; name?: string } | null;
+  team?: { id?: number; name?: string } | null;
+  goals?: number | null;
+  assists?: number | null;
 };

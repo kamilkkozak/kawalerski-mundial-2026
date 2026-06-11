@@ -1,0 +1,1001 @@
+{
+  "tournament": "Mistrzostwa Świata 2026",
+  "phase": "knockout",
+  "timezone_note": "Godziny w czasie polskim (CEST, UTC+2) zgodnie ze źródłem.",
+  "rounds": [
+    {
+      "code": "R32",
+      "name": "1/16 finału"
+    },
+    {
+      "code": "R16",
+      "name": "1/8 finału"
+    },
+    {
+      "code": "QF",
+      "name": "Ćwierćfinał"
+    },
+    {
+      "code": "SF",
+      "name": "Półfinał"
+    },
+    {
+      "code": "3RD",
+      "name": "Mecz o 3. miejsce"
+    },
+    {
+      "code": "F",
+      "name": "Finał"
+    }
+  ],
+  "matches": [
+    {
+      "match_id": 73,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-06-28",
+      "kickoff_local": "21:00",
+      "datetime_pl": "2026-06-28T21:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "A",
+        "position": 2,
+        "label": "2. drużyna grupy A"
+      },
+      "away": {
+        "type": "group_position",
+        "group": "B",
+        "position": 2,
+        "label": "2. drużyna grupy B"
+      },
+      "venue": {
+        "stadium": "SoFi Stadium",
+        "city": "Inglewood"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 74,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-06-29",
+      "kickoff_local": "22:30",
+      "datetime_pl": "2026-06-29T22:30:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "E",
+        "position": 1,
+        "label": "Zwycięzca grupy E"
+      },
+      "away": {
+        "type": "third_place",
+        "groups": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "F"
+        ],
+        "label": "3. drużyna grupy A/B/C/D/F"
+      },
+      "venue": {
+        "stadium": "Gillette Stadium",
+        "city": "Foxborough"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 75,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-06-30",
+      "kickoff_local": "03:00",
+      "datetime_pl": "2026-06-30T03:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "F",
+        "position": 1,
+        "label": "Zwycięzca grupy F"
+      },
+      "away": {
+        "type": "group_position",
+        "group": "C",
+        "position": 2,
+        "label": "2. drużyna grupy C"
+      },
+      "venue": {
+        "stadium": "Estadio BBVA",
+        "city": "Guadalupe"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 76,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-06-29",
+      "kickoff_local": "19:00",
+      "datetime_pl": "2026-06-29T19:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "C",
+        "position": 1,
+        "label": "Zwycięzca grupy C"
+      },
+      "away": {
+        "type": "group_position",
+        "group": "F",
+        "position": 2,
+        "label": "2. drużyna grupy F"
+      },
+      "venue": {
+        "stadium": "NRG Stadium",
+        "city": "Houston"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 77,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-06-30",
+      "kickoff_local": "23:00",
+      "datetime_pl": "2026-06-30T23:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "I",
+        "position": 1,
+        "label": "Zwycięzca grupy I"
+      },
+      "away": {
+        "type": "third_place",
+        "groups": [
+          "C",
+          "D",
+          "F",
+          "G",
+          "H"
+        ],
+        "label": "3. drużyna grupy C/D/F/G/H"
+      },
+      "venue": {
+        "stadium": "MetLife Stadium",
+        "city": "East Rutherford"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 78,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-06-30",
+      "kickoff_local": "19:00",
+      "datetime_pl": "2026-06-30T19:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "E",
+        "position": 2,
+        "label": "2. drużyna grupy E"
+      },
+      "away": {
+        "type": "group_position",
+        "group": "I",
+        "position": 2,
+        "label": "2. drużyna grupy I"
+      },
+      "venue": {
+        "stadium": "AT&T Stadium",
+        "city": "Arlington"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 79,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-07-01",
+      "kickoff_local": "03:00",
+      "datetime_pl": "2026-07-01T03:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "A",
+        "position": 1,
+        "label": "Zwycięzca grupy A"
+      },
+      "away": {
+        "type": "third_place",
+        "groups": [
+          "C",
+          "E",
+          "F",
+          "H",
+          "I"
+        ],
+        "label": "3. drużyna grupy C/E/F/H/I"
+      },
+      "venue": {
+        "stadium": "Estadio Azteca",
+        "city": "Meksyk"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 80,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-07-01",
+      "kickoff_local": "18:00",
+      "datetime_pl": "2026-07-01T18:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "L",
+        "position": 1,
+        "label": "Zwycięzca grupy L"
+      },
+      "away": {
+        "type": "third_place",
+        "groups": [
+          "E",
+          "H",
+          "I",
+          "J",
+          "K"
+        ],
+        "label": "3. drużyna grupy E/H/I/J/K"
+      },
+      "venue": {
+        "stadium": "Mercedes-Benz Stadium",
+        "city": "Atlanta"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 81,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-07-02",
+      "kickoff_local": "02:00",
+      "datetime_pl": "2026-07-02T02:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "D",
+        "position": 1,
+        "label": "Zwycięzca grupy D"
+      },
+      "away": {
+        "type": "third_place",
+        "groups": [
+          "B",
+          "E",
+          "F",
+          "I",
+          "J"
+        ],
+        "label": "3. drużyna grupy B/E/F/I/J"
+      },
+      "venue": {
+        "stadium": "Levi's Stadium",
+        "city": "Santa Clara"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 82,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-07-01",
+      "kickoff_local": "22:00",
+      "datetime_pl": "2026-07-01T22:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "G",
+        "position": 1,
+        "label": "Zwycięzca grupy G"
+      },
+      "away": {
+        "type": "third_place",
+        "groups": [
+          "A",
+          "E",
+          "H",
+          "I",
+          "J"
+        ],
+        "label": "3. drużyna grupy A/E/H/I/J"
+      },
+      "venue": {
+        "stadium": "Lumen Field",
+        "city": "Seattle"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 83,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-07-03",
+      "kickoff_local": "01:00",
+      "datetime_pl": "2026-07-03T01:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "K",
+        "position": 2,
+        "label": "2. drużyna grupy K"
+      },
+      "away": {
+        "type": "group_position",
+        "group": "L",
+        "position": 2,
+        "label": "2. drużyna grupy L"
+      },
+      "venue": {
+        "stadium": "BMO Field",
+        "city": "Toronto"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 84,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-07-02",
+      "kickoff_local": "21:00",
+      "datetime_pl": "2026-07-02T21:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "H",
+        "position": 1,
+        "label": "Zwycięzca grupy H"
+      },
+      "away": {
+        "type": "group_position",
+        "group": "J",
+        "position": 2,
+        "label": "2. drużyna grupy J"
+      },
+      "venue": {
+        "stadium": "SoFi Stadium",
+        "city": "Inglewood"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 85,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-07-03",
+      "kickoff_local": "05:00",
+      "datetime_pl": "2026-07-03T05:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "B",
+        "position": 1,
+        "label": "Zwycięzca grupy B"
+      },
+      "away": {
+        "type": "third_place",
+        "groups": [
+          "E",
+          "F",
+          "G",
+          "I",
+          "J"
+        ],
+        "label": "3. drużyna grupy E/F/G/I/J"
+      },
+      "venue": {
+        "stadium": "BC Place",
+        "city": "Vancouver"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 86,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-07-04",
+      "kickoff_local": "00:00",
+      "datetime_pl": "2026-07-04T00:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "J",
+        "position": 1,
+        "label": "Zwycięzca grupy J"
+      },
+      "away": {
+        "type": "group_position",
+        "group": "H",
+        "position": 2,
+        "label": "2. drużyna grupy H"
+      },
+      "venue": {
+        "stadium": "Hard Rock Stadium",
+        "city": "Miami Gardens"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 87,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-07-04",
+      "kickoff_local": "03:30",
+      "datetime_pl": "2026-07-04T03:30:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "K",
+        "position": 1,
+        "label": "Zwycięzca grupy K"
+      },
+      "away": {
+        "type": "third_place",
+        "groups": [
+          "D",
+          "E",
+          "I",
+          "J",
+          "L"
+        ],
+        "label": "3. drużyna grupy D/E/I/J/L"
+      },
+      "venue": {
+        "stadium": "Arrowhead Stadium",
+        "city": "Kansas City"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 88,
+      "round": "R32",
+      "round_pl": "1/16 finału",
+      "date": "2026-07-03",
+      "kickoff_local": "20:00",
+      "datetime_pl": "2026-07-03T20:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "group_position",
+        "group": "D",
+        "position": 2,
+        "label": "2. drużyna grupy D"
+      },
+      "away": {
+        "type": "group_position",
+        "group": "G",
+        "position": 2,
+        "label": "2. drużyna grupy G"
+      },
+      "venue": {
+        "stadium": "AT&T Stadium",
+        "city": "Arlington"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 89,
+      "round": "R16",
+      "round_pl": "1/8 finału",
+      "date": "2026-07-04",
+      "kickoff_local": "23:00",
+      "datetime_pl": "2026-07-04T23:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 74,
+        "label": "Zwycięzca meczu 74"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 77,
+        "label": "Zwycięzca meczu 77"
+      },
+      "venue": {
+        "stadium": "Lincoln Financial Field",
+        "city": "Filadelfia"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 90,
+      "round": "R16",
+      "round_pl": "1/8 finału",
+      "date": "2026-07-04",
+      "kickoff_local": "19:00",
+      "datetime_pl": "2026-07-04T19:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 73,
+        "label": "Zwycięzca meczu 73"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 75,
+        "label": "Zwycięzca meczu 75"
+      },
+      "venue": {
+        "stadium": "NRG Stadium",
+        "city": "Houston"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 91,
+      "round": "R16",
+      "round_pl": "1/8 finału",
+      "date": "2026-07-05",
+      "kickoff_local": "22:00",
+      "datetime_pl": "2026-07-05T22:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 76,
+        "label": "Zwycięzca meczu 76"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 78,
+        "label": "Zwycięzca meczu 78"
+      },
+      "venue": {
+        "stadium": "MetLife Stadium",
+        "city": "East Rutherford"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 92,
+      "round": "R16",
+      "round_pl": "1/8 finału",
+      "date": "2026-07-06",
+      "kickoff_local": "02:00",
+      "datetime_pl": "2026-07-06T02:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 79,
+        "label": "Zwycięzca meczu 79"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 80,
+        "label": "Zwycięzca meczu 80"
+      },
+      "venue": {
+        "stadium": "Estadio Azteca",
+        "city": "Meksyk"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 93,
+      "round": "R16",
+      "round_pl": "1/8 finału",
+      "date": "2026-07-06",
+      "kickoff_local": "21:00",
+      "datetime_pl": "2026-07-06T21:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 83,
+        "label": "Zwycięzca meczu 83"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 84,
+        "label": "Zwycięzca meczu 84"
+      },
+      "venue": {
+        "stadium": "AT&T Stadium",
+        "city": "Arlington"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 94,
+      "round": "R16",
+      "round_pl": "1/8 finału",
+      "date": "2026-07-07",
+      "kickoff_local": "02:00",
+      "datetime_pl": "2026-07-07T02:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 81,
+        "label": "Zwycięzca meczu 81"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 82,
+        "label": "Zwycięzca meczu 82"
+      },
+      "venue": {
+        "stadium": "Lumen Field",
+        "city": "Seattle"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 95,
+      "round": "R16",
+      "round_pl": "1/8 finału",
+      "date": "2026-07-07",
+      "kickoff_local": "18:00",
+      "datetime_pl": "2026-07-07T18:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 86,
+        "label": "Zwycięzca meczu 86"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 88,
+        "label": "Zwycięzca meczu 88"
+      },
+      "venue": {
+        "stadium": "Mercedes-Benz Stadium",
+        "city": "Atlanta"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 96,
+      "round": "R16",
+      "round_pl": "1/8 finału",
+      "date": "2026-07-07",
+      "kickoff_local": "22:00",
+      "datetime_pl": "2026-07-07T22:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 85,
+        "label": "Zwycięzca meczu 85"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 87,
+        "label": "Zwycięzca meczu 87"
+      },
+      "venue": {
+        "stadium": "BC Place",
+        "city": "Vancouver"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 97,
+      "round": "QF",
+      "round_pl": "Ćwierćfinał",
+      "date": "2026-07-09",
+      "kickoff_local": "22:00",
+      "datetime_pl": "2026-07-09T22:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 89,
+        "label": "Zwycięzca meczu 89"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 90,
+        "label": "Zwycięzca meczu 90"
+      },
+      "venue": {
+        "stadium": "Gillette Stadium",
+        "city": "Foxborough"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 98,
+      "round": "QF",
+      "round_pl": "Ćwierćfinał",
+      "date": "2026-07-10",
+      "kickoff_local": "21:00",
+      "datetime_pl": "2026-07-10T21:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 93,
+        "label": "Zwycięzca meczu 93"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 94,
+        "label": "Zwycięzca meczu 94"
+      },
+      "venue": {
+        "stadium": "SoFi Stadium",
+        "city": "Inglewood"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 99,
+      "round": "QF",
+      "round_pl": "Ćwierćfinał",
+      "date": "2026-07-11",
+      "kickoff_local": "23:00",
+      "datetime_pl": "2026-07-11T23:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 91,
+        "label": "Zwycięzca meczu 91"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 92,
+        "label": "Zwycięzca meczu 92"
+      },
+      "venue": {
+        "stadium": "Hard Rock Stadium",
+        "city": "Miami Gardens"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 100,
+      "round": "QF",
+      "round_pl": "Ćwierćfinał",
+      "date": "2026-07-12",
+      "kickoff_local": "03:00",
+      "datetime_pl": "2026-07-12T03:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 95,
+        "label": "Zwycięzca meczu 95"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 96,
+        "label": "Zwycięzca meczu 96"
+      },
+      "venue": {
+        "stadium": "Arrowhead Stadium",
+        "city": "Kansas City"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 101,
+      "round": "SF",
+      "round_pl": "Półfinał",
+      "date": "2026-07-14",
+      "kickoff_local": "21:00",
+      "datetime_pl": "2026-07-14T21:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 97,
+        "label": "Zwycięzca meczu 97"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 98,
+        "label": "Zwycięzca meczu 98"
+      },
+      "venue": {
+        "stadium": "AT&T Stadium",
+        "city": "Arlington"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 102,
+      "round": "SF",
+      "round_pl": "Półfinał",
+      "date": "2026-07-15",
+      "kickoff_local": "21:00",
+      "datetime_pl": "2026-07-15T21:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 99,
+        "label": "Zwycięzca meczu 99"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 100,
+        "label": "Zwycięzca meczu 100"
+      },
+      "venue": {
+        "stadium": "Mercedes-Benz Stadium",
+        "city": "Atlanta"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 103,
+      "round": "3RD",
+      "round_pl": "Mecz o 3. miejsce",
+      "date": "2026-07-18",
+      "kickoff_local": "23:00",
+      "datetime_pl": "2026-07-18T23:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_loser",
+        "match": 101,
+        "label": "Przegrany meczu 101"
+      },
+      "away": {
+        "type": "match_loser",
+        "match": 102,
+        "label": "Przegrany meczu 102"
+      },
+      "venue": {
+        "stadium": "Hard Rock Stadium",
+        "city": "Miami Gardens"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    },
+    {
+      "match_id": 104,
+      "round": "F",
+      "round_pl": "Finał",
+      "date": "2026-07-19",
+      "kickoff_local": "21:00",
+      "datetime_pl": "2026-07-19T21:00:00+02:00",
+      "timezone": "Europe/Warsaw",
+      "home": {
+        "type": "match_winner",
+        "match": 101,
+        "label": "Zwycięzca meczu 101"
+      },
+      "away": {
+        "type": "match_winner",
+        "match": 102,
+        "label": "Zwycięzca meczu 102"
+      },
+      "venue": {
+        "stadium": "MetLife Stadium",
+        "city": "East Rutherford"
+      },
+      "home_team": null,
+      "away_team": null,
+      "home_score": null,
+      "away_score": null,
+      "status": "scheduled"
+    }
+  ]
+}

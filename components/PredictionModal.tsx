@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import type { Match } from "@/lib/types";
 import { isLocked, lockAtMs } from "@/lib/scoring";
 import { stageLabel } from "@/lib/stages";
+import { venueInfo } from "@/lib/venues";
 import { fmtCountdown, fmtDay, fmtTime } from "@/lib/ui";
 import { savePrediction } from "@/app/actions";
 import { I } from "./icons";
@@ -77,6 +78,9 @@ export default function PredictionModal({
     ? `Grupa ${match.group_label}`
     : stageLabel(match.stage);
 
+  const v = venueInfo(match.venue);
+  const hasResult = match.status === "FINISHED" && match.score1 != null && match.score2 != null;
+
   return (
     <div className="modal-scrim" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal">
@@ -117,6 +121,23 @@ export default function PredictionModal({
             <span className="tn">{match.team2}</span>
           </div>
         </div>
+
+        {v && (
+          <div className="modal-venue">
+            {I.pin}
+            <span className="mv-stadium">{v.stadium}</span>
+            <span className="mv-sep">·</span>
+            <span>{v.city}</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="mv-flag" src={`https://flagcdn.com/${v.cc}.svg`} alt={v.country} title={v.country} loading="lazy"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }} />
+            <span className="mv-sep">·</span>
+            <span className="mv-meta">{v.capacity.toLocaleString("pl-PL")} miejsc</span>
+            {hasResult && match.attendance != null && (
+              <span className="mv-att">{I.people} {match.attendance.toLocaleString("pl-PL")}</span>
+            )}
+          </div>
+        )}
 
         <div className="modal-foot">
           {locked ? (

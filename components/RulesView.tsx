@@ -20,7 +20,7 @@ export default function RulesView() {
       </p>
 
       <h3>Pula nagród</h3>
-      <p>Wpisowe 50 zł. Nagrody: 1. miejsce <b>250 zł</b>, 2. miejsce <b>125 zł</b>, 3. miejsce <b>75 zł</b>. Kasę rozliczacie między sobą — apka tylko liczy punkty.</p>
+      <p>Wpisowe 100 zł. Nagrody: 1. miejsce <b>500 zł</b>, 2. miejsce <b>250 zł</b>, 3. miejsce <b>150 zł</b>. Kasę rozliczacie między sobą — apka tylko liczy punkty.</p>
 
       <h3>Wyniki</h3>
       <p>Wyniki pobierane są automatycznie z football-data.org co kilka minut; admin może je ręcznie skorygować (dogrywka, karne, opóźnienia API).</p>

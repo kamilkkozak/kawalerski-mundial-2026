@@ -8,47 +8,49 @@ import { I } from "./icons";
 import Flag from "./Flag";
 import Avatar from "./Avatar";
 
-const PRIZES = [250, 125, 75];
+const PRIZES = [500, 250, 150];
 
 export default function ResultsView({
   standings,
   meId,
   matches,
   preds,
+  avatars,
 }: {
   standings: StandingRow[];
   meId: string;
   matches: Match[];
   preds: PredMap;
+  avatars: Record<string, string | null>;
 }) {
   return (
     <div className="results-grid">
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-        <Leaderboard standings={standings} meId={meId} />
+        <Leaderboard standings={standings} meId={meId} avatars={avatars} />
         <MyBets matches={matches} preds={preds} />
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
         <LivePanel matches={matches} />
-        <PotPanel standings={standings} />
+        <PotPanel standings={standings} avatars={avatars} />
       </div>
     </div>
   );
 }
 
-function Leaderboard({ standings, meId }: { standings: StandingRow[]; meId: string }) {
+function Leaderboard({ standings, meId, avatars }: { standings: StandingRow[]; meId: string; avatars: Record<string, string | null> }) {
   return (
     <div className="panel">
-      <div className="panel-head">{I.trophy}<h3>Klasyfikacja generalna</h3><span className="ph-meta">na żywo</span></div>
+      <div className="panel-head">{I.trophy}<h3>Klasyfikacja generalna</h3></div>
       {standings.map((p, i) => {
         const rank = i + 1;
         const podium = rank <= 3 ? `podium-${rank}` : "";
         return (
           <div key={p.player_id} className={`lb-row ${podium} ${p.player_id === meId ? "me" : ""}`}>
             <span className="lb-rank">{rank}</span>
-            <Avatar name={p.name} seed={p.player_id} size={36} />
+            <Avatar name={p.name} seed={p.player_id} size={36} avatarUrl={avatars[p.player_id]} />
             <span className="lb-name">
               {p.name}
-              <small>{p.exact}× trafiony wynik{p.bonus_points > 0 ? ` · +${p.bonus_points} bonus` : ""}</small>
+              <small>{p.exact}× dokładny wynik · {Math.max(0, p.hits - p.exact)}× trafiony rezultat{p.bonus_points > 0 ? ` · +${p.bonus_points} bonus` : ""}</small>
             </span>
             <span className="lb-pts">{p.points}<small>pkt</small></span>
           </div>
@@ -59,25 +61,22 @@ function Leaderboard({ standings, meId }: { standings: StandingRow[]; meId: stri
   );
 }
 
-function PotPanel({ standings }: { standings: StandingRow[] }) {
+function PotPanel({ standings, avatars }: { standings: StandingRow[]; avatars: Record<string, string | null> }) {
   return (
     <div className="panel">
-      <div className="panel-head">{I.cup}<h3>Pula nagród</h3><span className="ph-meta">wpisowe 50 zł</span></div>
+      <div className="panel-head">{I.cup}<h3>Pula nagród</h3></div>
       <div style={{ padding: "6px 0" }}>
         {PRIZES.map((zl, i) => {
           const who = standings[i];
           return (
             <div key={i} className={`lb-row podium-${i + 1}`}>
               <span className="lb-rank">{i + 1}</span>
-              {who ? <Avatar name={who.name} seed={who.player_id} size={34} /> : <span className="avatar" style={{ width: 34, height: 34, background: "var(--surface-3)" }} />}
-              <span className="lb-name">{who ? who.name : "—"}<small>obecny lider miejsca</small></span>
+              {who ? <Avatar name={who.name} seed={who.player_id} size={34} avatarUrl={avatars[who.player_id]} /> : <span className="avatar" style={{ width: 34, height: 34, background: "var(--surface-3)" }} />}
+              <span className="lb-name">{who ? who.name : "—"}</span>
               <span className="lb-prize" style={{ fontSize: 13, padding: "4px 11px" }}>{zl} zł</span>
             </div>
           );
         })}
-      </div>
-      <div style={{ padding: "12px 18px", borderTop: "1px solid var(--border)", fontSize: 11.5, color: "var(--muted)", lineHeight: 1.6 }}>
-        Nagrody: <b style={{ color: "var(--text)" }}>1. 250 zł · 2. 125 zł · 3. 75 zł</b>. Bonus końcowy: +10 pkt za mistrza i +10 pkt za króla strzelców. Kasę rozliczacie między sobą.
       </div>
     </div>
   );
@@ -98,7 +97,6 @@ function LivePanel({ matches }: { matches: Match[] }) {
       <div className="panel-head">
         <span style={{ display: "inline-flex", width: 10, height: 10, borderRadius: "50%", background: "var(--bad)", animation: "pulse 1.2s infinite" }} />
         <h3>Na żywo</h3>
-        <span className="ph-meta">auto-sync co 5 min</span>
       </div>
       {live.length === 0 && recent.length === 0 && (
         <div style={{ padding: 22, color: "var(--muted)", fontSize: 13 }}>Brak meczów na żywo ani rozegranych.</div>

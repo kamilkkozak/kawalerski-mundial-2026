@@ -32,6 +32,7 @@ export async function updateSession(request: NextRequest) {
   const isPublic =
     path.startsWith("/login") ||
     path.startsWith("/auth") ||
+    path.startsWith("/preview") || // TODO: tymczasowy podgląd kart — usunąć po demie
     path.startsWith("/api/cron");
 
   if (!user && !isPublic) {

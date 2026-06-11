@@ -54,4 +54,4 @@ export const TEAMS: Team[] = [
 
 export const TOURNEY_START_ISO = "2026-06-11T19:00:00Z";
 
-export const PRIZES: Record<number, string> = { 0: "250 zł", 1: "125 zł", 2: "75 zł" };
+export const PRIZES: Record<number, string> = { 0: "500 zł", 1: "250 zł", 2: "150 zł" };

@@ -3,8 +3,10 @@
 import type { Match } from "@/lib/types";
 import { isLocked, scoreMatch } from "@/lib/scoring";
 import { fmtTime } from "@/lib/ui";
+import { venueInfo } from "@/lib/venues";
 import { I } from "./icons";
 import Flag from "./Flag";
+
 
 export default function MatchCard({
   match,
@@ -28,6 +30,7 @@ export default function MatchCard({
   else if (locked) stateCls = "locked";
 
   const clickable = !locked || hasResult || live;
+  const v = venueInfo(match.venue);
 
   return (
     <div className={`match ${stateCls}`} onClick={() => clickable && onOpen()} style={{ cursor: clickable ? "pointer" : "default" }}>
@@ -74,6 +77,32 @@ export default function MatchCard({
         <Flag name={match.team2} />
         <span className="tn">{match.team2}</span>
       </div>
+
+      {v && (
+        <div className="match-venue">
+          <span className="mv-place">
+            {I.pin}
+            <span className="mv-stadium">{v.stadium}</span>
+            <span className="mv-sep">·</span>
+            <span className="mv-city">{v.city}</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="mv-flag"
+              src={`https://flagcdn.com/${v.cc}.svg`}
+              alt={v.country}
+              title={v.country}
+              loading="lazy"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+            />
+          </span>
+          <span className="mv-meta">
+            {v.capacity.toLocaleString("pl-PL")} miejsc
+            {hasResult && match.attendance != null && (
+              <span className="mv-att"> · {I.people} {match.attendance.toLocaleString("pl-PL")}</span>
+            )}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

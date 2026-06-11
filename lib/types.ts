@@ -5,11 +5,12 @@ export type Player = {
   name: string;
   email: string | null;
   is_admin: boolean;
+  avatar_url: string | null; // URL/ścieżka awatara (Storage public URL lub /avatars/*.svg)
 };
 
 export type Stage = "group" | "r32" | "r16" | "qf" | "sf" | "third" | "final";
 
-export type MatchStatus = "SCHEDULED" | "IN_PLAY" | "PAUSED" | "FINISHED";
+export type MatchStatus = "SCHEDULED" | "TIMED" | "IN_PLAY" | "PAUSED" | "FINISHED";
 
 export type Match = {
   id: number;
@@ -24,7 +25,14 @@ export type Match = {
   venue: string | null;
   score1: number | null;
   score2: number | null;
+  attendance: number | null; // frekwencja — dociągana z API po meczu (null gdy brak)
   status: MatchStatus;
+  // Faza pucharowa (null dla meczów grupowych):
+  bracket_code: string | null; // "M73".."M104"
+  home_ref: string | null; // deskryptor slotu: "2A" / "1E" / "3/ABCDF" / "W73" / "L101"
+  away_ref: string | null;
+  home_locked: boolean; // ręczna obsada admina — auto-logika nie nadpisuje
+  away_locked: boolean;
 };
 
 export type Prediction = {
@@ -40,6 +48,8 @@ export type BonusPick = {
   player_id: string;
   champion: string | null;
   top_scorer: string | null;
+  champion_locked: boolean; // gracz zatwierdził typ mistrza świata (trwała blokada)
+  top_scorer_locked: boolean; // gracz zatwierdził typ króla strzelców (trwała blokada)
 };
 
 export type Settings = {
@@ -47,6 +57,20 @@ export type Settings = {
   champion_result: string | null;
   top_scorer_result: string | null;
   settled_at: string | null;
+  scorers_synced_at: string | null; // ostatnia synchronizacja /scorers
+  top_scorer_source: "auto" | "admin" | null; // kto rozstrzygnął bonus strzelca
+  top_scorer_review: boolean; // remis na 1. miejscu — wymaga decyzji admina
+};
+
+// Wiersz klasyfikacji strzelców (z football-data.org /scorers).
+export type Scorer = {
+  player_name: string;
+  rank: number | null;
+  team: string | null; // polska nazwa (zmapowana) lub oryginał
+  team_en: string | null; // oryginał z API (do flagi)
+  goals: number;
+  assists: number | null;
+  updated_at: string;
 };
 
 export type Team = { name: string; flag: string };
