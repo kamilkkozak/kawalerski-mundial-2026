@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { BrandCrest } from "@/components/icons";
 import { signInAction, signUpAction, type AuthState } from "./actions";
@@ -42,6 +42,7 @@ function PinInput({ name, placeholder }: { name: string; placeholder: string }) 
 
 function SignupForm() {
   const [state, action] = useFormState<AuthState, FormData>(signUpAction, {});
+  useEffect(() => { if (state.success) window.location.href = "/"; }, [state.success]);
   return (
     <form action={action} autoComplete="off">
       <div className="field">
@@ -67,6 +68,7 @@ function SignupForm() {
 
 function LoginForm() {
   const [state, action] = useFormState<AuthState, FormData>(signInAction, {});
+  useEffect(() => { if (state.success) window.location.href = "/"; }, [state.success]);
   return (
     <form action={action} autoComplete="off">
       <div className="field">

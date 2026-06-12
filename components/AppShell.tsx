@@ -68,6 +68,7 @@ export default function AppShell({
   initialBetStatus,
   initialVisiblePreds,
   initialScorers,
+  initialAllBonusPicks,
 }: {
   me: Player;
   matches: Match[];
@@ -80,6 +81,7 @@ export default function AppShell({
   initialBetStatus: BetStatusRow[];
   initialVisiblePreds: VisiblePredRow[];
   initialScorers: Scorer[];
+  initialAllBonusPicks: { player_id: string; champion: string | null; champion_locked: boolean; top_scorer: string | null; top_scorer_locked: boolean }[];
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [me, setMe] = useState<Player>(initialMe);
@@ -320,10 +322,10 @@ export default function AppShell({
           {view === "group" && <MatchList matches={matches} preds={preds} now={now} onOpenMatch={openMatch} />}
           {view === "bracket" && <KnockoutBracket matches={matches} onOpenMatch={openMatch} />}
           {view === "champion" && (
-            <SpecialBets mode="champion" bonus={bonus} setBonus={setBonus} settings={settings} matches={matches} now={now} onToast={showToast} />
+            <SpecialBets mode="champion" bonus={bonus} setBonus={setBonus} settings={settings} matches={matches} now={now} onToast={showToast} allBonusPicks={initialAllBonusPicks} players={playersLive} meId={me.id} />
           )}
           {view === "scorer" && (
-            <SpecialBets mode="scorer" bonus={bonus} setBonus={setBonus} settings={settings} matches={matches} now={now} onToast={showToast} scorers={scorers} />
+            <SpecialBets mode="scorer" bonus={bonus} setBonus={setBonus} settings={settings} matches={matches} now={now} onToast={showToast} scorers={scorers} allBonusPicks={initialAllBonusPicks} players={playersLive} meId={me.id} />
           )}
           {view === "results" && <ResultsView standings={standings} meId={me.id} matches={matches} preds={preds} avatars={avatars} now={now} />}
           {view === "bets" && (

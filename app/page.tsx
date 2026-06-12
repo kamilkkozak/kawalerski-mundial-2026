@@ -27,7 +27,7 @@ export default async function HomePage() {
     ({ data: me } = await supabase.from("players").select("*").eq("id", user.id).single());
   }
 
-  const [matchesRes, predsRes, myBonusRes, settingsRes, standingsRes, playersRes, statusRes, visiblePredsRes, scorersRes] =
+  const [matchesRes, predsRes, myBonusRes, settingsRes, standingsRes, playersRes, statusRes, visiblePredsRes, scorersRes, allBonusRes] =
     await Promise.all([
       supabase.from("matches").select("*").order("kickoff", { ascending: true }),
       supabase.from("predictions").select("*").eq("player_id", user.id),
@@ -40,6 +40,8 @@ export default async function HomePage() {
       // Widoczne wartości typów: RLS oddaje moje zawsze + cudze tylko po blokadzie meczu.
       supabase.from("predictions").select("player_id, match_id, pred1, pred2"),
       supabase.from("scorers").select("*").order("rank", { ascending: true }),
+      // Bonus picks wszystkich graczy — RLS ujawnia po starcie turnieju.
+      supabase.from("bonus_picks").select("player_id, champion, champion_locked, top_scorer, top_scorer_locked"),
     ]);
 
   const matches = (matchesRes.data ?? []) as Match[];
@@ -61,6 +63,7 @@ export default async function HomePage() {
   for (const r of players) avatars[r.id] = r.avatar_url;
 
   const scorers = (scorersRes.data ?? []) as Scorer[];
+  const allBonusPicks = (allBonusRes.data ?? []) as { player_id: string; champion: string | null; champion_locked: boolean; top_scorer: string | null; top_scorer_locked: boolean }[];
   const betStatus = (statusRes.data ?? []) as { player_id: string; match_id: number }[];
   const visiblePreds = (visiblePredsRes.data ?? []) as {
     player_id: string;
@@ -82,6 +85,7 @@ export default async function HomePage() {
       initialBetStatus={betStatus}
       initialVisiblePreds={visiblePreds}
       initialScorers={scorers}
+      initialAllBonusPicks={allBonusPicks}
     />
   );
 }

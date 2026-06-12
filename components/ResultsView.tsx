@@ -8,7 +8,7 @@ import Flag from "./Flag";
 import Avatar from "./Avatar";
 import RankEmblem from "./RankEmblem";
 
-const PRIZES = [500, 250, 150];
+const PRIZES = [600, 250, 150];
 
 export default function ResultsView({
   standings,

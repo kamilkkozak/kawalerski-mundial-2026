@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import {
   emailForName,
@@ -11,7 +10,7 @@ import {
   validatePin,
 } from "@/lib/auth";
 
-export type AuthState = { error?: string };
+export type AuthState = { error?: string; success?: boolean };
 
 // --- Rejestracja: tylko nazwa + PIN (z powtórzeniem). E-mail generowany z nicku. ---
 export async function signUpAction(_prev: AuthState, formData: FormData): Promise<AuthState> {
@@ -53,7 +52,7 @@ export async function signUpAction(_prev: AuthState, formData: FormData): Promis
   });
   if (signInErr) return { error: signInErr.message };
 
-  redirect("/");
+  return { success: true };
 }
 
 // --- Logowanie: nazwa LUB e-mail + PIN ---------------------------------
@@ -68,7 +67,6 @@ export async function signInAction(_prev: AuthState, formData: FormData): Promis
   if (identifier.includes("@")) {
     email = normalizeEmail(identifier);
   } else {
-    // Nazwa -> e-mail konta (lookup przez service_role, bo user nie jest jeszcze zalogowany).
     const admin = createServiceClient();
     const { data: players } = await admin.from("players").select("name, email");
     const norm = normalizeName(identifier);
@@ -83,5 +81,5 @@ export async function signInAction(_prev: AuthState, formData: FormData): Promis
   });
   if (error) return { error: "Błędna nazwa / e-mail lub PIN." };
 
-  redirect("/");
+  return { success: true };
 }
