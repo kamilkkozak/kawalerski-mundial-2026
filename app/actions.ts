@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { validatePin, passwordFromPin, normalizeName } from "@/lib/auth";
 
 // Mapuje techniczne błędy RPC na komunikaty po polsku.
 function msg(code?: string): string {
@@ -146,6 +147,46 @@ export async function updateMyAvatar(url: string | null): Promise<ActionResult> 
   }
 
   const { error } = await supabase.from("players").update({ avatar_url: value }).eq("id", user.id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function resetPin(name: string, code: string, newPin: string, newPin2: string): Promise<{ error?: string; success?: boolean }> {
+  if (code.trim().toLowerCase() !== "kochać kodżusia") return { error: "Nieprawidłowy kod odzyskiwania." };
+  if (newPin !== newPin2) return { error: "PIN-y nie są takie same." };
+  const pinErr = validatePin(newPin);
+  if (pinErr) return { error: pinErr };
+  const normName = normalizeName(name.trim());
+  if (!normName) return { error: "Podaj nazwę użytkownika." };
+  const admin = createServiceClient();
+  const { data: players } = await admin.from("players").select("id, name");
+  const player = (players ?? []).find((p: { id: string; name: string }) => normalizeName(p.name) === normName);
+  if (!player) return { error: "Nie ma konta o tej nazwie." };
+  const { data: authData } = await admin.auth.admin.getUserById(player.id);
+  if (authData?.user?.app_metadata?.pin_reset_used) {
+    return { error: "Kod odzyskiwania już był użyty. Skontaktuj się z adminem." };
+  }
+  const { error } = await admin.auth.admin.updateUserById(player.id, {
+    password: passwordFromPin(newPin),
+    app_metadata: { pin_reset_used: true },
+  });
+  if (error) return { error: error.message };
+  return { success: true };
+}
+
+export async function adminResetPin(targetPlayerId: string, newPin: string): Promise<ActionResult> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Musisz być zalogowany." };
+  const { data: me } = await supabase.from("players").select("is_admin").eq("id", user.id).single();
+  if (!me?.is_admin) return { ok: false, error: msg("NOT_ADMIN") };
+  const pinErr = validatePin(newPin);
+  if (pinErr) return { ok: false, error: pinErr };
+  const admin = createServiceClient();
+  const { error } = await admin.auth.admin.updateUserById(targetPlayerId, {
+    password: passwordFromPin(newPin),
+    app_metadata: { pin_reset_used: false },
+  });
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }

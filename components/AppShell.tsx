@@ -336,7 +336,7 @@ export default function AppShell({
             <ProfileView me={me} onAvatarChange={onAvatarChange} onNameChange={onNameChange} onToast={showToast} />
           )}
           {view === "admin" && me.is_admin && (
-            <AdminView matches={matches} settings={settings} scorers={scorers} onChange={() => { refetchMatches(); refetchStandings(); refetchSettings(); }} />
+            <AdminView matches={matches} settings={settings} scorers={scorers} players={players} onChange={() => { refetchMatches(); refetchStandings(); refetchSettings(); }} />
           )}
         </div>
       </main>

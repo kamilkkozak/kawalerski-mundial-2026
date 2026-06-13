@@ -5,20 +5,24 @@ import type { Match, Settings, Scorer } from "@/lib/types";
 import { TEAMS } from "@/lib/teams";
 import { refLabel } from "@/lib/bracket";
 import { fmtDateTime } from "@/lib/ui";
-import { adminSetResult, adminSetBonusResult, adminSetSlot, adminClearSlot } from "@/app/actions";
+import { adminSetResult, adminSetBonusResult, adminSetSlot, adminClearSlot, adminResetPin } from "@/app/actions";
 import { I } from "./icons";
 
 const FLAG_BY_NAME: Record<string, string> = Object.fromEntries(TEAMS.map((t) => [t.name, t.flag]));
+
+type PlayerLite = { id: string; name: string };
 
 export default function AdminView({
   matches,
   settings,
   scorers = [],
+  players = [],
   onChange,
 }: {
   matches: Match[];
   settings: Settings | null;
   scorers?: Scorer[];
+  players?: PlayerLite[];
   onChange: () => void;
 }) {
   const [filter, setFilter] = useState("");
@@ -48,6 +52,7 @@ export default function AdminView({
         </div>
       </div>
 
+      <PlayerPinReset players={players} />
       <KnockoutAdmin matches={matches} onChange={onChange} />
 
       <div className="panel">
@@ -59,6 +64,51 @@ export default function AdminView({
         <div style={{ maxHeight: "62vh", overflowY: "auto" }}>
           {list.map((m) => <AdminMatchRow key={m.id} match={m} onChange={onChange} />)}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function PlayerPinReset({ players }: { players: PlayerLite[] }) {
+  const [playerId, setPlayerId] = useState("");
+  const [pin, setPin] = useState("");
+  const [pending, startTransition] = useTransition();
+  const [msg, setMsg] = useState<{ text: string; err?: boolean } | null>(null);
+
+  function reset() {
+    if (!playerId || !pin) return;
+    startTransition(async () => {
+      const res = await adminResetPin(playerId, pin);
+      setMsg({ text: res.ok ? "PIN zmieniony." : (res.error ?? "Błąd"), err: !res.ok });
+      if (res.ok) { setPlayerId(""); setPin(""); }
+      setTimeout(() => setMsg(null), 3000);
+    });
+  }
+
+  return (
+    <div className="panel">
+      <div className="panel-head">{I.people}<h3>Resetuj PIN gracza</h3></div>
+      <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 10, maxWidth: 360 }}>
+        <select value={playerId} onChange={(e) => setPlayerId(e.target.value)} className="scorer-input">
+          <option value="">— wybierz gracza —</option>
+          {players.sort((a, b) => a.name.localeCompare(b.name, "pl")).map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+        <input
+          className="scorer-input"
+          type="password"
+          inputMode="numeric"
+          placeholder="Nowy PIN (4–6 cyfr)"
+          value={pin}
+          pattern="\d{4,6}"
+          maxLength={6}
+          onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+        />
+        {msg && <div style={{ fontSize: 13, color: msg.err ? "var(--warn)" : "var(--accent)" }}>{msg.text}</div>}
+        <button className="btn btn-primary" disabled={pending || !playerId || pin.length < 4} onClick={reset} style={{ alignSelf: "flex-start", padding: "10px 18px" }}>
+          Ustaw PIN
+        </button>
       </div>
     </div>
   );
