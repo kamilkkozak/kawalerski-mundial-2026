@@ -47,6 +47,7 @@ export default function MatchCard({
         {live ? (
           <>
             <div className="match-score"><span style={{ color: "var(--bad)" }}>{match.score1 ?? 0}</span><span className="sep">:</span><span style={{ color: "var(--bad)" }}>{match.score2 ?? 0}</span></div>
+            <span className="match-update-time">akt. {fmtTime(match.updated_at)}</span>
             {pred ? <span className="match-pred-tag has">Twój typ {pred.pred1}:{pred.pred2}</span> : <span className="match-pred-tag">brak typu</span>}
           </>
         ) : hasResult ? (

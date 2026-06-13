@@ -174,7 +174,10 @@ function MatchBets({
         <span className="bm-when">{fmtDay(m.kickoff)} · {fmtTime(m.kickoff)}</span>
         <div className="bm-teams">
           <Flag name={m.team1} /><span className="bm-tname">{m.team1}</span>
-          <span className="bm-score">{finished || live ? `${m.score1 ?? 0} : ${m.score2 ?? 0}` : "vs"}</span>
+          <span className="bm-score">
+            {finished || live ? `${m.score1 ?? 0} : ${m.score2 ?? 0}` : "vs"}
+            {live && <span className="bm-update-time">akt. {fmtTime(m.updated_at)}</span>}
+          </span>
           <span className="bm-tname right">{m.team2}</span><Flag name={m.team2} />
         </div>
         <span className="bm-meta">

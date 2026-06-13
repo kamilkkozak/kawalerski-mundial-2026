@@ -33,6 +33,7 @@ export type Match = {
   away_ref: string | null;
   home_locked: boolean; // ręczna obsada admina — auto-logika nie nadpisuje
   away_locked: boolean;
+  updated_at: string; // ISO timestamp ostatniej zmiany wiersza (auto-sync / admin)
 };
 
 export type Prediction = {

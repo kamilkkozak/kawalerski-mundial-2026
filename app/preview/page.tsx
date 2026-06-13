@@ -24,6 +24,7 @@ const base = {
   away_ref: null,
   home_locked: false,
   away_locked: false,
+  updated_at: new Date(now).toISOString(),
 };
 
 const matches: Match[] = [
