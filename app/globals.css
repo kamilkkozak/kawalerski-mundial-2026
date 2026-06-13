@@ -818,3 +818,15 @@ input, select { font-family: inherit; }
   .scorers-row { grid-template-columns: 28px 1fr 46px 50px; gap: 7px; padding: 9px 12px; }
   .scorers-row .sc-team { display: none; }
 }
+
+/* ---- Historia meczów toggle ---- */
+.bm-history-toggle {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%; padding: 13px 18px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--rad);
+  color: var(--muted); font-size: 13px; font-weight: 600; text-align: left;
+  cursor: pointer; transition: 0.12s;
+}
+.bm-history-toggle:hover { background: var(--surface-2); color: var(--text); border-color: var(--border-2); }
+.bm-history-count { background: var(--surface-3); border-radius: 20px; padding: 1px 8px; font-size: 11px; }
+.bm-history-arrow { margin-left: auto; font-size: 10px; }

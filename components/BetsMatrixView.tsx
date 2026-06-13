@@ -57,6 +57,7 @@ export default function BetsMatrixView({
 }) {
   const [filter, setFilter] = useState<FilterKey>("now");
   const [group, setGroup] = useState<string | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // ja na górze, reszta alfabetycznie
   const orderedPlayers = useMemo(() => {
@@ -111,15 +112,31 @@ export default function BetsMatrixView({
         </div>
       )}
 
-      {visible.length === 0 ? (
-        <div className="panel" style={{ padding: 26, color: "var(--muted)", fontSize: 13 }}>Brak meczów dla tego filtra.</div>
-      ) : (
-        <div className="bm-list">
-          {visible.map((m) => (
-            <MatchBets key={m.id} m={m} players={orderedPlayers} statusSet={statusSet} predValues={predValues} meId={meId} now={now} onOpenMatch={onOpenMatch} />
-          ))}
-        </div>
-      )}
+      {(() => {
+        const upcoming = visible.filter((m) => !isFinished(m));
+        const history = visible.filter(isFinished).sort((a, b) => +new Date(b.kickoff) - +new Date(a.kickoff));
+        if (visible.length === 0) return (
+          <div className="panel" style={{ padding: 26, color: "var(--muted)", fontSize: 13 }}>Brak meczów dla tego filtra.</div>
+        );
+        return (
+          <div className="bm-list">
+            {upcoming.map((m) => (
+              <MatchBets key={m.id} m={m} players={orderedPlayers} statusSet={statusSet} predValues={predValues} meId={meId} now={now} onOpenMatch={onOpenMatch} />
+            ))}
+            {history.length > 0 && (
+              <>
+                <button className="bm-history-toggle" onClick={() => setHistoryOpen((o) => !o)}>
+                  {I.list} Historia meczów <span className="bm-history-count">{history.length}</span>
+                  <span className="bm-history-arrow">{historyOpen ? "▲" : "▼"}</span>
+                </button>
+                {historyOpen && history.map((m) => (
+                  <MatchBets key={m.id} m={m} players={orderedPlayers} statusSet={statusSet} predValues={predValues} meId={meId} now={now} onOpenMatch={onOpenMatch} />
+                ))}
+              </>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
