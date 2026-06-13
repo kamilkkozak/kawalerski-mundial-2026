@@ -174,6 +174,20 @@ export async function resetPin(name: string, code: string, newPin: string, newPi
   return { success: true };
 }
 
+export async function adminUnlockReset(targetPlayerId: string): Promise<ActionResult> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Musisz być zalogowany." };
+  const { data: me } = await supabase.from("players").select("is_admin").eq("id", user.id).single();
+  if (!me?.is_admin) return { ok: false, error: msg("NOT_ADMIN") };
+  const admin = createServiceClient();
+  const { error } = await admin.auth.admin.updateUserById(targetPlayerId, {
+    app_metadata: { pin_reset_used: false },
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
 export async function adminResetPin(targetPlayerId: string, newPin: string): Promise<ActionResult> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();

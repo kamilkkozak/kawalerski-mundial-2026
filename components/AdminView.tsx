@@ -5,7 +5,7 @@ import type { Match, Settings, Scorer } from "@/lib/types";
 import { TEAMS } from "@/lib/teams";
 import { refLabel } from "@/lib/bracket";
 import { fmtDateTime } from "@/lib/ui";
-import { adminSetResult, adminSetBonusResult, adminSetSlot, adminClearSlot, adminResetPin } from "@/app/actions";
+import { adminSetResult, adminSetBonusResult, adminSetSlot, adminClearSlot, adminResetPin, adminUnlockReset } from "@/app/actions";
 import { I } from "./icons";
 
 const FLAG_BY_NAME: Record<string, string> = Object.fromEntries(TEAMS.map((t) => [t.name, t.flag]));
@@ -85,6 +85,15 @@ function PlayerPinReset({ players }: { players: PlayerLite[] }) {
     });
   }
 
+  function unlock() {
+    if (!playerId) return;
+    startTransition(async () => {
+      const res = await adminUnlockReset(playerId);
+      setMsg({ text: res.ok ? "Reset odblokowany." : (res.error ?? "Błąd"), err: !res.ok });
+      setTimeout(() => setMsg(null), 3000);
+    });
+  }
+
   return (
     <div className="panel">
       <div className="panel-head">{I.people}<h3>Resetuj PIN gracza</h3></div>
@@ -106,9 +115,14 @@ function PlayerPinReset({ players }: { players: PlayerLite[] }) {
           onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
         />
         {msg && <div style={{ fontSize: 13, color: msg.err ? "var(--warn)" : "var(--accent)" }}>{msg.text}</div>}
-        <button className="btn btn-primary" disabled={pending || !playerId || pin.length < 4} onClick={reset} style={{ alignSelf: "flex-start", padding: "10px 18px" }}>
-          Ustaw PIN
-        </button>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button className="btn btn-primary" disabled={pending || !playerId || pin.length < 4} onClick={reset} style={{ padding: "10px 18px" }}>
+            Ustaw PIN
+          </button>
+          <button className="btn" disabled={pending || !playerId} onClick={unlock} style={{ padding: "10px 18px" }}>
+            Odblokuj reset
+          </button>
+        </div>
       </div>
     </div>
   );
