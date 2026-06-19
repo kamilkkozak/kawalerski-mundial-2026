@@ -33,7 +33,7 @@ export default function ResultsView({
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
         <LivePanel matches={matches} now={now} />
-        <MatchHistory matches={matches} now={now} />
+        <MatchHistory matches={matches} />
       </div>
     </div>
   );
@@ -52,15 +52,13 @@ function isDoneWithScore(m: Match): boolean {
 function Leaderboard({ standings, meId, avatars }: { standings: StandingRow[]; meId: string; avatars: Record<string, string | null> }) {
   return (
     <div className="panel">
-      <div className="panel-head">{I.trophy}<h3>Klasyfikacja generalna</h3></div>
+      <div className="panel-head">{I.trophy}<h3>Ranking</h3></div>
       {standings.map((p, i) => {
         const rank = i + 1;
         const podium = rank <= 3 ? `podium-${rank}` : "";
         return (
           <div key={p.player_id} className={`lb-row ${podium} ${p.player_id === meId ? "me" : ""}`}>
-            {rank <= 3
-              ? <span className="lb-rank emblem"><RankEmblem rank={rank} size={50} /></span>
-              : <span className="lb-rank">{rank}</span>}
+            <span className="lb-rank emblem"><RankEmblem rank={rank} size={58} /></span>
             <Avatar name={p.name} seed={p.player_id} size={36} avatarUrl={avatars[p.player_id]} />
             <span className="lb-name">
               {p.name}
@@ -81,8 +79,10 @@ function LivePanel({ matches, now }: { matches: Match[]; now: number }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // "Na żywo" = w oknie czasowym i jeszcze nierozstrzygnięty. Gdy admin ustawi
+  // FINISHED z wynikiem, mecz natychmiast znika stąd i ląduje w Historii.
   const live = useMemo(
-    () => (mounted ? matches.filter((m) => inLiveWindow(m, now)).sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff)) : []),
+    () => (mounted ? matches.filter((m) => inLiveWindow(m, now) && !isDoneWithScore(m)).sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff)) : []),
     [matches, now, mounted]
   );
 
@@ -111,17 +111,14 @@ function LivePanel({ matches, now }: { matches: Match[]; now: number }) {
   );
 }
 
-// Historia rozegranych meczów (FINISHED z wynikiem, poza oknem live), najnowsze u góry.
-function MatchHistory({ matches, now }: { matches: Match[]; now: number }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
+// Historia rozegranych meczów (FINISHED z wynikiem), najnowsze u góry.
+function MatchHistory({ matches }: { matches: Match[] }) {
   const done = useMemo(
     () =>
       matches
-        .filter((m) => isDoneWithScore(m) && (!mounted || !inLiveWindow(m, now)))
+        .filter(isDoneWithScore)
         .sort((a, b) => +new Date(b.kickoff) - +new Date(a.kickoff)),
-    [matches, now, mounted]
+    [matches]
   );
 
   return (

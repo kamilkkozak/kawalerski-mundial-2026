@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { toPl, mapStatus, type FdMatch, type FdScorer } from "@/lib/footballdata";
+import { syncMatchStats } from "@/lib/apifootball";
 import { progressionUpdates, isResolved, type Decided } from "@/lib/bracket";
 import { TEAMS } from "@/lib/teams";
 import type { Match } from "@/lib/types";
@@ -125,7 +126,13 @@ export async function GET(request: Request) {
       if (hp && hp === target.team2) { sc1 = s2; sc2 = s1; }
     }
 
-    const update: Record<string, unknown> = { status, score1: sc1, score2: sc2 };
+    // Darmowy plan football-data.org nie dostarcza wyniku live — fullTime jest null przez
+    // cały czas trwania meczu. Zachowaj ręcznie wpisany wynik admina (LIVE) jeśli API
+    // zwraca null, żeby cron nie zerował wpisanego wyniku.
+    const finalSc1 = sc1 ?? (status !== "FINISHED" ? target.score1 : null);
+    const finalSc2 = sc2 ?? (status !== "FINISHED" ? target.score2 : null);
+
+    const update: Record<string, unknown> = { status, score1: finalSc1, score2: finalSc2 };
 
     // Zapisz frekwencję, gdy API ją podało (nie zeruj istniejącej wartości).
     if (att != null) update.attendance = att;
@@ -150,8 +157,8 @@ export async function GET(request: Request) {
 
     const needsUpdate =
       target.status !== status ||
-      target.score1 !== sc1 ||
-      target.score2 !== sc2 ||
+      target.score1 !== finalSc1 ||
+      target.score2 !== finalSc2 ||
       teamsChanged ||
       (att != null && target.attendance !== att);
     if (needsUpdate) {
@@ -262,6 +269,21 @@ export async function GET(request: Request) {
     console.warn(`[scorers] sekcja pominięta: ${(e as Error).message}`);
   }
 
+  // ===================================================================
+  // Statystyki meczów (API-Football) — MODUŁ ODIZOLOWANY. Błąd/limit/brak
+  // klucza pomijamy bez wpływu na synchronizację wyników powyżej.
+  // Realne zapytania do API idą tylko, gdy jest nowy FINISHED bez statystyk.
+  // ===================================================================
+  let stats: unknown = { skipped: "disabled" };
+  try {
+    if (process.env.API_FOOTBALL_KEY) {
+      stats = await syncMatchStats(supabase, process.env.API_FOOTBALL_KEY);
+    }
+  } catch (e) {
+    console.warn(`[apif] sekcja statystyk pominięta: ${(e as Error).message}`);
+    stats = { error: (e as Error).message };
+  }
+
   return NextResponse.json({
     ok: true,
     fetched: fdMatches.length,
@@ -272,5 +294,6 @@ export async function GET(request: Request) {
     bonusResolved,
     unmatched: unmatched.slice(0, 20),
     unmatchedCount: unmatched.length,
+    stats,
   });
 }

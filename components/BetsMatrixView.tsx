@@ -1,15 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Match, Stage } from "@/lib/types";
 import { isLocked, lockAtMs, scoreMatch } from "@/lib/scoring";
-import { fmtDay, fmtTime, fmtCountdown } from "@/lib/ui";
+import { fmtDay, fmtTime, fmtDateTimeSafe, fmtCountdown } from "@/lib/ui";
 import { I } from "./icons";
 import Flag from "./Flag";
 import Avatar from "./Avatar";
 
 type PlayerLite = { id: string; name: string; avatar_url: string | null };
-type FilterKey = "now" | "all" | Stage;
+type FilterKey = "now" | "all" | "history" | Stage;
 
 const STAGE_FILTERS: { key: FilterKey; label: string }[] = [
   { key: "now", label: "Najbliższe" },
@@ -30,13 +30,6 @@ function isLive(m: Match): boolean {
   return m.status === "IN_PLAY" || m.status === "PAUSED";
 }
 
-// not-finished rosnąco po kickoffie, potem finished malejąco (najświeższe wyżej)
-function byTimeline(a: Match, b: Match): number {
-  const fa = isFinished(a), fb = isFinished(b);
-  if (fa !== fb) return fa ? 1 : -1;
-  const ka = +new Date(a.kickoff), kb = +new Date(b.kickoff);
-  return fa ? kb - ka : ka - kb;
-}
 
 export default function BetsMatrixView({
   matches,
@@ -57,7 +50,6 @@ export default function BetsMatrixView({
 }) {
   const [filter, setFilter] = useState<FilterKey>("now");
   const [group, setGroup] = useState<string | null>(null);
-  const [historyOpen, setHistoryOpen] = useState(false);
 
   // ja na górze, reszta alfabetycznie
   const orderedPlayers = useMemo(() => {
@@ -75,23 +67,55 @@ export default function BetsMatrixView({
   }, [matches]);
 
   const visible = useMemo(() => {
-    if (filter === "now") {
-      // "Najbliższe": mecze dzisiejsze i jutrzejsze (lokalna data), chronologicznie.
-      const start = new Date(now); start.setHours(0, 0, 0, 0);
-      const end = new Date(start); end.setDate(end.getDate() + 2); // do końca jutra
-      const s = start.getTime(), e = end.getTime();
+    if (filter === "history") {
       return matches
-        .filter((m) => { const k = +new Date(m.kickoff); return k >= s && k < e; })
-        .sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff));
+        .filter(isFinished)
+        .sort((a, b) => +new Date(b.kickoff) - +new Date(a.kickoff));
     }
-    let list = filter === "all" ? matches : matches.filter((m) => m.stage === filter);
-    if (filter === "group" && group) list = list.filter((m) => m.group_label === group);
-    return [...list].sort(byTimeline);
+    let list: Match[];
+    if (filter === "now") {
+      const start = new Date(now); start.setHours(0, 0, 0, 0);
+      const end = new Date(start); end.setDate(end.getDate() + 2);
+      const s = start.getTime(), e = end.getTime();
+      list = matches.filter((m) => { const k = +new Date(m.kickoff); return !isFinished(m) && k >= s && k < e; });
+    } else {
+      list = filter === "all" ? matches : matches.filter((m) => m.stage === filter);
+      if (filter === "group" && group) list = list.filter((m) => m.group_label === group);
+      list = list.filter((m) => !isFinished(m));
+    }
+    return [...list].sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff));
   }, [matches, filter, group, now]);
+
+  const historyCount = useMemo(() => matches.filter(isFinished).length, [matches]);
+
+  // Pierwszy mecz na żywo lub nadchodzący — cel auto-scroll po zmianie filtra
+  const firstActiveId = useMemo(() => {
+    const live = visible.find(m => m.status === "IN_PLAY" || m.status === "PAUSED");
+    if (live) return live.id;
+    const upcoming = visible.find(m => !isFinished(m) && !isLocked(m.kickoff, now));
+    return upcoming?.id ?? null;
+  }, [visible, now]);
+
+  useEffect(() => {
+    if (!firstActiveId) return;
+    document.querySelector<HTMLElement>(".bm-match[data-current]")
+      ?.scrollIntoView({ behavior: "instant", block: "start" });
+  }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="bets-view">
       <div className="bm-filters">
+        {historyCount > 0 && (
+          <>
+            <button
+              className={`bm-chip ${filter === "history" ? "on" : ""}`}
+              onClick={() => { setFilter("history"); setGroup(null); }}
+            >
+              Historia <span className="bm-history-count">{historyCount}</span>
+            </button>
+            <span className="bm-filter-sep" />
+          </>
+        )}
         {STAGE_FILTERS.map((f) => (
           <button
             key={f.key}
@@ -112,37 +136,22 @@ export default function BetsMatrixView({
         </div>
       )}
 
-      {(() => {
-        const upcoming = visible.filter((m) => !isFinished(m));
-        const history = visible.filter(isFinished).sort((a, b) => +new Date(b.kickoff) - +new Date(a.kickoff));
-        if (visible.length === 0) return (
-          <div className="panel" style={{ padding: 26, color: "var(--muted)", fontSize: 13 }}>Brak meczów dla tego filtra.</div>
-        );
-        return (
-          <div className="bm-list">
-            {upcoming.map((m) => (
-              <MatchBets key={m.id} m={m} players={orderedPlayers} statusSet={statusSet} predValues={predValues} meId={meId} now={now} onOpenMatch={onOpenMatch} />
-            ))}
-            {history.length > 0 && (
-              <>
-                <button className="bm-history-toggle" onClick={() => setHistoryOpen((o) => !o)}>
-                  {I.list} Historia meczów <span className="bm-history-count">{history.length}</span>
-                  <span className="bm-history-arrow">{historyOpen ? "▲" : "▼"}</span>
-                </button>
-                {historyOpen && history.map((m) => (
-                  <MatchBets key={m.id} m={m} players={orderedPlayers} statusSet={statusSet} predValues={predValues} meId={meId} now={now} onOpenMatch={onOpenMatch} />
-                ))}
-              </>
-            )}
+      <div className="bm-list">
+        {visible.length === 0 && (
+          <div className="panel" style={{ padding: 26, color: "var(--muted)", fontSize: 13 }}>
+            {filter === "history" ? "Brak zakończonych meczów." : "Brak meczów dla tego filtra."}
           </div>
-        );
-      })()}
+        )}
+        {visible.map((m) => (
+          <MatchBets key={m.id} m={m} players={orderedPlayers} statusSet={statusSet} predValues={predValues} meId={meId} now={now} onOpenMatch={onOpenMatch} isCurrent={m.id === firstActiveId} />
+        ))}
+      </div>
     </div>
   );
 }
 
 function MatchBets({
-  m, players, statusSet, predValues, meId, now, onOpenMatch,
+  m, players, statusSet, predValues, meId, now, onOpenMatch, isCurrent,
 }: {
   m: Match;
   players: PlayerLite[];
@@ -151,6 +160,7 @@ function MatchBets({
   meId: string;
   now: number;
   onOpenMatch: (m: Match) => void;
+  isCurrent?: boolean;
 }) {
   const finished = isFinished(m);
   const live = isLive(m);
@@ -169,14 +179,14 @@ function MatchBets({
   else { closeKind = "open"; closeText = `Zamknięcie za ${fmtCountdown(lockAtMs(m.kickoff) - now)}`; }
 
   return (
-    <div className="panel bm-match">
+    <div className="panel bm-match" data-current={isCurrent || undefined}>
       <div className="bm-head">
         <span className="bm-when">{fmtDay(m.kickoff)} · {fmtTime(m.kickoff)}</span>
         <div className="bm-teams">
           <Flag name={m.team1} /><span className="bm-tname">{m.team1}</span>
           <span className="bm-score">
             {finished || live ? `${m.score1 ?? 0} : ${m.score2 ?? 0}` : "vs"}
-            {live && <span className="bm-update-time">akt. {fmtTime(m.updated_at)}</span>}
+            {live && fmtDateTimeSafe(m.updated_at) && <span className="bm-update-time">Aktualizacja: {fmtDateTimeSafe(m.updated_at)}.</span>}
           </span>
           <span className="bm-tname right">{m.team2}</span><Flag name={m.team2} />
         </div>

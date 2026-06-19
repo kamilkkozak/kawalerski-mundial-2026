@@ -12,16 +12,18 @@ import KnockoutBracket from "./KnockoutBracket";
 import SpecialBets from "./SpecialBets";
 import ResultsView from "./ResultsView";
 import BetsMatrixView from "./BetsMatrixView";
+import GroupTablesView from "./GroupTablesView";
 import RulesView from "./RulesView";
 import AdminView from "./AdminView";
 import ProfileView from "./ProfileView";
 import PredictionModal from "./PredictionModal";
 
-type View = "group" | "bracket" | "champion" | "scorer" | "results" | "bets" | "rules" | "admin" | "profile";
+type View = "group" | "bracket" | "champion" | "scorer" | "results" | "bets" | "tables" | "rules" | "admin" | "profile";
 
 const TITLES: Record<View, [string, string]> = {
-  results: ["Wyniki & ranking", ""],
+  results: ["Ranking & wyniki", ""],
   bets: ["Typy kawalerów", ""],
+  tables: ["Tabele grup", ""],
   group: ["Faza grupowa", ""],
   bracket: ["Faza pucharowa", ""],
   champion: ["Mistrz świata", ""],
@@ -253,8 +255,9 @@ export default function AppShell({
   );
 
   const NAV: { key: View; label: string; icon: keyof typeof I }[] = [
-    { key: "results", label: "Wyniki i ranking", icon: "trophy" },
+    { key: "results", label: "Ranking i wyniki", icon: "trophy" },
     { key: "bets", label: "Typy kawalerów", icon: "list" },
+    { key: "tables", label: "Tabele", icon: "table" },
     { key: "group", label: "Faza grupowa", icon: "grid" },
     { key: "bracket", label: "Faza pucharowa", icon: "flow" },
     { key: "champion", label: "Mistrz świata", icon: "cup" },
@@ -331,6 +334,7 @@ export default function AppShell({
           {view === "bets" && (
             <BetsMatrixView matches={matches} players={playersLive} statusSet={betStatus} predValues={betPreds} meId={me.id} now={now} onOpenMatch={openMatch} />
           )}
+          {view === "tables" && <GroupTablesView matches={matches} />}
           {view === "rules" && <RulesView />}
           {view === "profile" && (
             <ProfileView me={me} onAvatarChange={onAvatarChange} onNameChange={onNameChange} onToast={showToast} />

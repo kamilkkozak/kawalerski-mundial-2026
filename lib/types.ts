@@ -15,6 +15,7 @@ export type MatchStatus = "SCHEDULED" | "TIMED" | "IN_PLAY" | "PAUSED" | "FINISH
 export type Match = {
   id: number;
   ext_id: number | null; // id z football-data.org (do auto-sync)
+  apif_fixture_id?: number | null; // id fixture w API-Football (statystyki — moduł osobny)
   stage: Stage;
   group_label: string | null; // "A".."L" dla fazy grupowej
   kickoff: string; // ISO timestamptz (UTC)

@@ -21,6 +21,8 @@ export const I: Record<string, React.ReactNode> = {
   list: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="nav-ico"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.4"/><circle cx="4.5" cy="12" r="1.4"/><circle cx="4.5" cy="18" r="1.4"/></svg>,
   eye: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>,
   people: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="11" height="11"><circle cx="9" cy="8" r="3"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0M16 5.2a3 3 0 0 1 0 5.6M20.5 20a5.5 5.5 0 0 0-4-5.3"/></svg>,
+  table: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="nav-ico"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M3 9.5h18M3 14.5h18M9 9.5v10"/></svg>,
+  chart: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="13" height="13"><path d="M4 20V11M10 20V5M16 20v-6M21 20H3" strokeLinecap="round"/></svg>,
 };
 
 // Własny herb ligi (nie godło FIFA): heksagonalny badge + "26".

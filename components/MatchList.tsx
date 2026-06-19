@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Match, PredMap } from "@/lib/types";
 import { isLocked, lockAtMs } from "@/lib/scoring";
 import { fmtDay, fmtCountdown } from "@/lib/ui";
@@ -35,6 +35,24 @@ export default function MatchList({
       .map((k) => ({ key: k, list: map[k].sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff)) }));
   }, [matches]);
 
+  // Pierwszy dzień z meczem na żywo lub nadchodzącym — cel auto-scroll
+  const firstActiveDayKey = useMemo(() => {
+    return byDay.find(day =>
+      day.list.some(m =>
+        m.status === "IN_PLAY" || m.status === "PAUSED" ||
+        (m.status !== "FINISHED" && !isLocked(m.kickoff, now))
+      )
+    )?.key;
+  }, [byDay, now]);
+
+  const scrolledRef = useRef(false);
+  useEffect(() => {
+    if (scrolledRef.current || !firstActiveDayKey) return;
+    scrolledRef.current = true;
+    document.querySelector<HTMLElement>(".day-block[data-current]")
+      ?.scrollIntoView({ behavior: "instant", block: "start" });
+  }, [firstActiveDayKey]);
+
   return (
     <div>
       {byDay.map((day) => {
@@ -55,7 +73,7 @@ export default function MatchList({
           }
         }
         return (
-          <div className="day-block" key={day.key}>
+          <div className="day-block" key={day.key} data-current={firstActiveDayKey === day.key || undefined}>
             <div className="day-head">
               <span className="dd">
                 {fmtDay(day.key + "T12:00:00")}

@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { Match, Settings, Scorer } from "@/lib/types";
 import { TEAMS } from "@/lib/teams";
 import { refLabel } from "@/lib/bracket";
 import { fmtDateTime } from "@/lib/ui";
 import { adminSetResult, adminSetBonusResult, adminSetSlot, adminClearSlot, adminResetPin, adminUnlockReset } from "@/app/actions";
 import { I } from "./icons";
+import Flag from "./Flag";
 
 const FLAG_BY_NAME: Record<string, string> = Object.fromEntries(TEAMS.map((t) => [t.name, t.flag]));
 
@@ -28,8 +29,32 @@ export default function AdminView({
   const [filter, setFilter] = useState("");
   const list = useMemo(() => {
     const f = filter.trim().toLowerCase();
-    return matches.filter((m) => !f || m.team1.toLowerCase().includes(f) || m.team2.toLowerCase().includes(f));
+    return matches
+      .filter((m) => !f || m.team1.toLowerCase().includes(f) || m.team2.toLowerCase().includes(f))
+      .sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff));
   }, [matches, filter]);
+
+  // "Aktualny" mecz do korekty: trwający (LIVE) lub najbliższy jeszcze nierozegrany.
+  const currentId = useMemo(() => {
+    const sorted = [...matches].sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff));
+    const live = sorted.find((m) => m.status === "IN_PLAY" || m.status === "PAUSED");
+    if (live) return live.id;
+    const next = sorted.find((m) => m.status !== "FINISHED");
+    return next?.id ?? sorted[sorted.length - 1]?.id ?? null;
+  }, [matches]);
+
+  // Po wejściu w panel przewiń listę korekty do aktualnego meczu (w obrębie kontenera,
+  // bez ruszania całej strony). Robimy to raz na zamontowanie widoku.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrolledRef = useRef(false);
+  useEffect(() => {
+    if (scrolledRef.current || !scrollRef.current) return;
+    const container = scrollRef.current;
+    const row = container.querySelector<HTMLElement>("[data-current]");
+    if (!row) return;
+    scrolledRef.current = true;
+    container.scrollTop += row.getBoundingClientRect().top - container.getBoundingClientRect().top - 8;
+  }, [currentId]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 22, maxWidth: 760 }}>
@@ -46,6 +71,17 @@ export default function AdminView({
       </div>
 
       <div className="panel">
+        <div className="panel-head">
+          {I.cog}<h3>Korekta wyników</h3>
+          <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Szukaj drużyny…"
+            style={{ marginLeft: "auto", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "var(--rad-sm)", padding: "6px 11px", color: "var(--text)", fontSize: 12, outline: "none" }} />
+        </div>
+        <div ref={scrollRef} style={{ maxHeight: "62vh", overflowY: "auto" }}>
+          {list.map((m) => <AdminMatchRow key={m.id} match={m} onChange={onChange} isCurrent={m.id === currentId} />)}
+        </div>
+      </div>
+
+      <div className="panel">
         <div className="panel-head">{I.cup}<h3>Wynik bonusów</h3><span className="ph-meta">rozliczane na koniec</span></div>
         <div style={{ padding: 18 }}>
           <BonusResultForm settings={settings} scorers={scorers} onChange={onChange} />
@@ -54,17 +90,6 @@ export default function AdminView({
 
       <PlayerPinReset players={players} />
       <KnockoutAdmin matches={matches} onChange={onChange} />
-
-      <div className="panel">
-        <div className="panel-head">
-          {I.cog}<h3>Korekta wyników</h3>
-          <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Szukaj drużyny…"
-            style={{ marginLeft: "auto", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "var(--rad-sm)", padding: "6px 11px", color: "var(--text)", fontSize: 12, outline: "none" }} />
-        </div>
-        <div style={{ maxHeight: "62vh", overflowY: "auto" }}>
-          {list.map((m) => <AdminMatchRow key={m.id} match={m} onChange={onChange} />)}
-        </div>
-      </div>
     </div>
   );
 }
@@ -256,7 +281,7 @@ function SlotEditor({ match, side, onChange }: { match: Match; side: "home" | "a
   );
 }
 
-function AdminMatchRow({ match, onChange }: { match: Match; onChange: () => void }) {
+function AdminMatchRow({ match, onChange, isCurrent }: { match: Match; onChange: () => void; isCurrent?: boolean }) {
   const [s1, setS1] = useState(match.score1?.toString() ?? "");
   const [s2, setS2] = useState(match.score2?.toString() ?? "");
   const [pending, startTransition] = useTransition();
@@ -272,16 +297,26 @@ function AdminMatchRow({ match, onChange }: { match: Match; onChange: () => void
   }
 
   return (
-    <div className="admin-row">
+    <div className={`admin-row ${isCurrent ? "current" : ""}`} data-current={isCurrent || undefined}>
       <span className="admin-when">{fmtDateTime(match.kickoff)}</span>
-      <span className="admin-team r">{match.team1}</span>
-      <input className="admin-score" inputMode="numeric" value={s1} onChange={(e) => /^\d?\d?$/.test(e.target.value) && setS1(e.target.value)} />
-      <span style={{ color: "var(--faint)" }}>:</span>
-      <input className="admin-score" inputMode="numeric" value={s2} onChange={(e) => /^\d?\d?$/.test(e.target.value) && setS2(e.target.value)} />
-      <span className="admin-team">{match.team2}</span>
-      <span className={`admin-status ${match.status === "FINISHED" ? "fin" : ""}`}>{match.status}</span>
-      <button className="admin-live" disabled={pending} onClick={() => save("IN_PLAY")} title="Zapisz wynik na żywo (mecz trwa)">LIVE</button>
-      <button className="admin-save" disabled={pending} onClick={() => save("FINISHED")} title="Zapisz wynik końcowy">{saved ? "✓" : I.check}</button>
+      <div className="admin-mid">
+        <span className="admin-team r">
+          <span className="admin-tn">{match.team1}</span>
+          <Flag name={match.team1} />
+        </span>
+        <input className="admin-score" inputMode="numeric" value={s1} onChange={(e) => /^\d?\d?$/.test(e.target.value) && setS1(e.target.value)} />
+        <span className="admin-colon">:</span>
+        <input className="admin-score" inputMode="numeric" value={s2} onChange={(e) => /^\d?\d?$/.test(e.target.value) && setS2(e.target.value)} />
+        <span className="admin-team">
+          <Flag name={match.team2} />
+          <span className="admin-tn">{match.team2}</span>
+        </span>
+      </div>
+      <div className="admin-actions">
+        <span className={`admin-status ${match.status === "FINISHED" ? "fin" : ""}`}>{match.status}</span>
+        <button className="admin-live" disabled={pending} onClick={() => save("IN_PLAY")} title="Zapisz wynik na żywo (mecz trwa)">LIVE</button>
+        <button className="admin-save" disabled={pending} onClick={() => save("FINISHED")} title="Zapisz wynik końcowy">{saved ? "✓" : I.check}</button>
+      </div>
     </div>
   );
 }

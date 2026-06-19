@@ -1,11 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import type { Match } from "@/lib/types";
 import { isLocked, scoreMatch } from "@/lib/scoring";
-import { fmtTime } from "@/lib/ui";
+import { fmtTime, fmtDateShort, fmtDateTimeSafe } from "@/lib/ui";
 import { venueInfo } from "@/lib/venues";
 import { I } from "./icons";
 import Flag from "./Flag";
+import MatchStatsPanel from "./MatchStatsPanel";
+
+// Statystyki meczu (API-Football) — UI ukryte do czasu skonfigurowania API.
+// Włącz ustawiając NEXT_PUBLIC_STATS_ENABLED=1 (lokalnie w .env.local, na prod w Vercel).
+const STATS_UI = process.env.NEXT_PUBLIC_STATS_ENABLED === "1";
 
 
 export default function MatchCard({
@@ -19,6 +25,7 @@ export default function MatchCard({
   now: number;
   onOpen: () => void;
 }) {
+  const [showStats, setShowStats] = useState(false);
   const hasResult = match.score1 != null && match.score2 != null && match.status === "FINISHED";
   const live = match.status === "IN_PLAY" || match.status === "PAUSED";
   const locked = isLocked(match.kickoff, now);
@@ -34,10 +41,6 @@ export default function MatchCard({
 
   return (
     <div className={`match ${stateCls}`} onClick={() => clickable && onOpen()} style={{ cursor: clickable ? "pointer" : "default" }}>
-      {live && <span className="live-badge"><span className="dot" />LIVE</span>}
-      {locked && !live && !hasResult && <span className="lock-badge">{I.lock} zamknięte</span>}
-      {hasResult && <span className="lock-badge">KONIEC</span>}
-
       <div className="match-side home">
         <Flag name={match.team1} />
         <span className="tn">{match.team1}</span>
@@ -47,11 +50,12 @@ export default function MatchCard({
         {live ? (
           <>
             <div className="match-score"><span style={{ color: "var(--bad)" }}>{match.score1 ?? 0}</span><span className="sep">:</span><span style={{ color: "var(--bad)" }}>{match.score2 ?? 0}</span></div>
-            <span className="match-update-time">akt. {fmtTime(match.updated_at)}</span>
+            {fmtDateTimeSafe(match.updated_at) && <span className="match-update-time">Aktualizacja: {fmtDateTimeSafe(match.updated_at)}.</span>}
             {pred ? <span className="match-pred-tag has">Twój typ {pred.pred1}:{pred.pred2}</span> : <span className="match-pred-tag">brak typu</span>}
           </>
         ) : hasResult ? (
           <>
+            <div className="match-when">{fmtDateShort(match.kickoff)} · {fmtTime(match.kickoff)} · koniec</div>
             <div className="match-score">{match.score1}<span className="sep">:</span>{match.score2}</div>
             {pts != null ? (
               <span className={`match-pred-tag ${pts === 3 ? "pts-3" : pts === 1 ? "pts-1" : "pts-0"}`}>{pred!.pred1}:{pred!.pred2} · +{pts} pkt</span>
@@ -61,7 +65,7 @@ export default function MatchCard({
           </>
         ) : (
           <>
-            <div className="match-when">{fmtTime(match.kickoff)}</div>
+            <div className="match-when">{fmtDateShort(match.kickoff)} · {fmtTime(match.kickoff)}</div>
             <div className="match-score empty">
               {pred ? <span style={{ color: "var(--accent)" }}>{pred.pred1}<span className="sep">:</span>{pred.pred2}</span> : <span>–<span className="sep">:</span>–</span>}
             </div>
@@ -102,6 +106,20 @@ export default function MatchCard({
               <span className="mv-att"> · {I.people} {match.attendance.toLocaleString("pl-PL")}</span>
             )}
           </span>
+        </div>
+      )}
+
+      {hasResult && STATS_UI && (
+        <div className="match-stats-wrap" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            className={`match-stats-toggle ${showStats ? "open" : ""}`}
+            onClick={() => setShowStats((s) => !s)}
+            aria-expanded={showStats}
+          >
+            {I.chart}<span>Statystyki meczu</span><span className="mst-chev">{showStats ? "▲" : "▼"}</span>
+          </button>
+          {showStats && <MatchStatsPanel matchId={match.id} team1={match.team1} team2={match.team2} />}
         </div>
       )}
     </div>
