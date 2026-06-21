@@ -149,30 +149,34 @@ function MyBets({ matches, preds }: { matches: Match[]; preds: PredMap }) {
     () =>
       matches
         .filter((m) => (m.status === "FINISHED" || m.status === "IN_PLAY" || m.status === "PAUSED") && preds[m.id])
-        .sort((a, b) => +new Date(b.kickoff) - +new Date(a.kickoff))
-        .slice(0, 10),
+        .sort((a, b) => +new Date(b.kickoff) - +new Date(a.kickoff)),
     [matches, preds]
   );
 
   return (
     <div className="panel">
       <div className="panel-head">{I.star}<h3>Moje typy</h3></div>
-      <div className="mybets-row head"><span>Mecz</span><span className="mb-cell">Typ</span><span className="mb-cell">Wynik</span><span className="mb-pts">Pkt</span></div>
-      {rows.length === 0 && <div style={{ padding: 22, color: "var(--muted)", fontSize: 13 }}>Brak rozstrzygniętych typów.</div>}
-      {rows.map((m) => {
-        const pred = preds[m.id];
-        const finished = m.status === "FINISHED" && m.score1 != null && m.score2 != null;
-        const pts = finished ? scoreMatch({ a: pred.pred1, b: pred.pred2 }, { a: m.score1, b: m.score2 }) : null;
-        const cls = pts === 3 ? "p3" : pts === 1 ? "p1" : pts === 0 ? "p0" : "pending";
-        return (
-          <div key={m.id} className="mybets-row">
-            <span className="mb-match"><Flag name={m.team1} /> {m.team1.slice(0, 3).toUpperCase()}–{m.team2.slice(0, 3).toUpperCase()} <Flag name={m.team2} /></span>
-            <span className="mb-cell">{pred.pred1}:{pred.pred2}</span>
-            <span className="mb-cell muted">{m.score1 != null ? `${m.score1}:${m.score2}` : "–"}</span>
-            <span className={`mb-pts ${cls}`}>{finished ? `+${pts}` : "…"}</span>
-          </div>
-        );
-      })}
+      {rows.length === 0 ? (
+        <div style={{ padding: 22, color: "var(--muted)", fontSize: 13 }}>Brak rozstrzygniętych typów.</div>
+      ) : (
+        <div className="mybets-scroll">
+          <div className="mybets-row head"><span>Mecz</span><span className="mb-cell">Typ</span><span className="mb-cell">Wynik</span><span className="mb-pts">Pkt</span></div>
+          {rows.map((m) => {
+            const pred = preds[m.id];
+            const finished = m.status === "FINISHED" && m.score1 != null && m.score2 != null;
+            const pts = finished ? scoreMatch({ a: pred.pred1, b: pred.pred2 }, { a: m.score1, b: m.score2 }) : null;
+            const cls = pts === 3 ? "p3" : pts === 1 ? "p1" : pts === 0 ? "p0" : "pending";
+            return (
+              <div key={m.id} className="mybets-row">
+                <span className="mb-match"><Flag name={m.team1} /> {m.team1.slice(0, 3).toUpperCase()}–{m.team2.slice(0, 3).toUpperCase()} <Flag name={m.team2} /></span>
+                <span className="mb-cell">{pred.pred1}:{pred.pred2}</span>
+                <span className="mb-cell muted">{m.score1 != null ? `${m.score1}:${m.score2}` : "–"}</span>
+                <span className={`mb-pts ${cls}`}>{finished ? `+${pts}` : "…"}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

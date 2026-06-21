@@ -20,6 +20,7 @@ export const FD_TO_PL: Record<string, string> = {
   "Czech Republic": "Czechy",
   "DR Congo": "DR Konga",
   "Congo DR": "DR Konga",
+  "Democratic Republic of the Congo": "DR Konga",
   "Egypt": "Egipt",
   "Ecuador": "Ekwador",
   "France": "Francja",

@@ -179,7 +179,7 @@ function ChampionPicksTable({
 
   return (
     <div className="panel scorers-panel" style={{ marginTop: 16 }}>
-      <div className="panel-head">{I.cup}<h3>Obstawienia uczestników</h3></div>
+      <div className="panel-head">{I.cup}<h3>Typy kawalerów</h3></div>
       <div style={{ display: "grid", gridTemplateColumns: "max-content auto" }}>
         {rows.map(({ pick, player }) => {
           const isMe = player.id === meId;
@@ -247,7 +247,7 @@ function ScorerPicksTable({
 
   return (
     <div className="panel scorers-panel" style={{ marginTop: 16 }}>
-      <div className="panel-head">{I.ball}<h3>Obstawienia uczestników</h3></div>
+      <div className="panel-head">{I.ball}<h3>Typy kawalerów</h3></div>
       <div style={{ display: "grid", gridTemplateColumns: "max-content auto" }}>
         {rows.map(({ pick, player }) => {
           const isMe = player.id === meId;

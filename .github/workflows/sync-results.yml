@@ -1,7 +1,10 @@
-name: Sync match results
+name: Sync match results + live
 
 # Darmowy cron (zamiast Vercel Cron na planie Hobby, który chodzi ~1x/dzień).
-# Uderza w endpoint /api/cron/sync-results co 5 min z nagłówkiem Bearer <CRON_SECRET>.
+# Co 5 min uderza w DWA endpointy tym samym Bearerem:
+#   /api/cron/sync-results  — wyniki końcowe, strzelcy, drabinka (football-data.org)
+#   /api/cron/sync-live     — wynik NA ŻYWO w trakcie meczu (Varzesh3); poza oknem
+#                             meczu sam się wycisza (no-live-window), więc to tanie.
 #
 # Wymaga dwóch sekretów repo (Settings -> Secrets and variables -> Actions):
 #   APP_URL      = https://TWOJA-APKA.vercel.app   (bez ukośnika na końcu)
@@ -23,6 +26,22 @@ jobs:
             "${APP_URL}/api/cron/sync-results")
           echo "HTTP $code"
           cat /tmp/body.txt
+          test "$code" = "200"
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      # Live z Varzesh3 — niezależny od powyższego (if: always()), żeby działał nawet
+      # gdy sync-results zwróci błąd. Body pokazuje m.in. v3Matches/updated/note —
+      # to też nasz definitywny test geo z Vercela (v3Matches>0 = Vercel dosięga Varzesh3).
+      - name: Call sync-live endpoint (Varzesh3)
+        if: always()
+        run: |
+          code=$(curl -sS -o /tmp/live.txt -w "%{http_code}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${APP_URL}/api/cron/sync-live")
+          echo "HTTP $code"
+          cat /tmp/live.txt
           test "$code" = "200"
         env:
           APP_URL: ${{ secrets.APP_URL }}

@@ -10,7 +10,7 @@ import Flag from "./Flag";
 
 const ADVANCE_THIRDS = 8; // ile najlepszych 3. miejsc awansuje
 
-type FormResult = "W" | "D" | "L";
+type Cell = "W" | "D" | "L" | "S"; // S = mecz zaplanowany (jeszcze nierozegrany)
 
 type TeamRow = {
   team: string;
@@ -22,7 +22,7 @@ type TeamRow = {
   ga: number;
   gd: number;
   pts: number;
-  form: FormResult[]; // chronologicznie (najstarszy → najnowszy)
+  cells: Cell[]; // wszystkie mecze grupowe chronologicznie (najstarszy → najnowszy), wliczając zaplanowane
 };
 
 type GroupTable = { label: string; rows: TeamRow[] };
@@ -44,40 +44,41 @@ function buildTables(matches: Match[]): GroupTable[] {
     if (!g) { g = new Map(); groups.set(label, g); }
     let r = g.get(team);
     if (!r) {
-      r = { team, played: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0, form: [] };
+      r = { team, played: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0, cells: [] };
       g.set(team, r);
     }
     return r;
   };
 
-  // Najpierw zarejestruj wszystkie drużyny (także z meczów jeszcze nierozegranych),
-  // żeby tabela pokazywała pełną grupę od początku turnieju.
+  // Wszystkie mecze grupowe w kolejności rozegrania — także te jeszcze nierozegrane,
+  // żeby tabela i pasek "Mecze" pokazywały pełną grupę od początku turnieju.
   const groupMatches = matches
     .filter((m) => m.stage === "group" && m.group_label)
     .sort((a, b) => +new Date(a.kickoff) - +new Date(b.kickoff));
 
+  // Jeden przebieg: rejestruje drużyny, liczy statystyki meczów zakończonych
+  // i dopisuje komórkę paska "Mecze" (mecz zaplanowany = "S").
   for (const m of groupMatches) {
-    ensure(m.group_label!, m.team1);
-    ensure(m.group_label!, m.team2);
-  }
-
-  for (const m of groupMatches) {
-    if (!isFinished(m)) continue;
-    const s1 = m.score1 as number, s2 = m.score2 as number;
     const r1 = ensure(m.group_label!, m.team1);
     const r2 = ensure(m.group_label!, m.team2);
+    if (!isFinished(m)) {
+      r1.cells.push("S");
+      r2.cells.push("S");
+      continue;
+    }
+    const s1 = m.score1 as number, s2 = m.score2 as number;
     r1.played++; r2.played++;
     r1.gf += s1; r1.ga += s2;
     r2.gf += s2; r2.ga += s1;
     if (s1 > s2) {
-      r1.w++; r1.pts += 3; r1.form.push("W");
-      r2.l++; r2.form.push("L");
+      r1.w++; r1.pts += 3; r1.cells.push("W");
+      r2.l++; r2.cells.push("L");
     } else if (s1 < s2) {
-      r2.w++; r2.pts += 3; r2.form.push("W");
-      r1.l++; r1.form.push("L");
+      r2.w++; r2.pts += 3; r2.cells.push("W");
+      r1.l++; r1.cells.push("L");
     } else {
-      r1.d++; r1.pts++; r1.form.push("D");
-      r2.d++; r2.pts++; r2.form.push("D");
+      r1.d++; r1.pts++; r1.cells.push("D");
+      r2.d++; r2.pts++; r2.cells.push("D");
     }
   }
 
@@ -116,11 +117,6 @@ export default function GroupTablesView({ matches }: { matches: Match[] }) {
 
   return (
     <div className="gt-view">
-      <div className="gt-legend">
-        <span className="gt-leg adv"><i /> Awans bezpośredni (miejsca 1–2)</span>
-        <span className="gt-leg adv3"><i /> 3. miejsce z awansem (8 najlepszych)</span>
-      </div>
-
       <div className="gt-wrap">
         {tables.map((t) => (
           <GroupTable key={t.label} table={t} qThirds={qThirds} />
@@ -156,7 +152,7 @@ function GroupTable({ table, qThirds }: { table: GroupTable; qThirds: Set<string
             <span title="Bramki stracone">BS</span>
             <span title="Różnica bramek">RB</span>
             <span className="gt-pts" title="Punkty">Pkt</span>
-            <span className="gt-formhead">Ostatnie</span>
+            <span className="gt-formhead">Mecze</span>
           </div>
 
           {table.rows.map((r, i) => {
@@ -181,7 +177,7 @@ function GroupTable({ table, qThirds }: { table: GroupTable; qThirds: Set<string
                 </span>
                 <span className="gt-pts">{r.pts}</span>
                 <span className="gt-form">
-                  <FormDots form={r.form} />
+                  <MatchDots cells={r.cells} />
                 </span>
               </div>
             );
@@ -192,18 +188,25 @@ function GroupTable({ table, qThirds }: { table: GroupTable; qThirds: Set<string
   );
 }
 
-// Forma: najnowszy wynik po lewej, do 5 ostatnich.
-function FormDots({ form }: { form: FormResult[] }) {
-  const last = form.slice(-5).reverse();
-  if (last.length === 0) return <span className="gt-form-empty">—</span>;
-  const cls = (r: FormResult) => (r === "W" ? "w" : r === "D" ? "d" : "l");
+// Pasek meczów grupowych: chronologicznie (najstarszy po lewej), wliczając mecze
+// zaplanowane (puste, szare). Każda drużyna gra 3 mecze w grupie.
+function MatchDots({ cells }: { cells: Cell[] }) {
+  if (cells.length === 0) return <span className="gt-form-empty">—</span>;
+  const meta = (c: Cell) =>
+    c === "W" ? { cls: "w", txt: "W", title: "Wygrana" }
+    : c === "D" ? { cls: "d", txt: "R", title: "Remis" }
+    : c === "L" ? { cls: "l", txt: "P", title: "Porażka" }
+    : { cls: "s", txt: "", title: "Mecz zaplanowany" };
   return (
     <>
-      {last.map((r, i) => (
-        <span key={i} className={`gt-fc ${cls(r)}`} title={r === "W" ? "Wygrana" : r === "D" ? "Remis" : "Porażka"}>
-          {r === "W" ? "W" : r === "D" ? "R" : "P"}
-        </span>
-      ))}
+      {cells.map((c, i) => {
+        const m = meta(c);
+        return (
+          <span key={i} className={`gt-fc ${m.cls}`} title={m.title}>
+            {m.txt}
+          </span>
+        );
+      })}
     </>
   );
 }
