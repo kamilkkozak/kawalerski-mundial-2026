@@ -103,6 +103,7 @@ export async function syncLiveScores(
     finishedSeen: 0,
     updated: 0,
     unmatched: [] as string[],
+    minuteError: null as string | null,
     report: [] as Array<Record<string, unknown>>,
   };
 
@@ -174,8 +175,12 @@ export async function syncLiveScores(
     if (live) summary.liveFound++;
     if (finished) summary.finishedSeen++;
 
-    // Czy zaktualizujemy? Tylko mecze LIVE i tylko jeśli w bazie nie są jeszcze FINISHED
-    // (wynik końcowy należy do football-data/admina — nie nadpisujemy).
+    // Minuta meczu (np. "85'") — tylko dla live i tylko jeśli zawiera cyfrę (przerwa/
+    // inne stany bywają tekstem perskim → wtedy null, badge pokaże "LIVE").
+    const minute = live && vm.liveTime && /\d/.test(vm.liveTime) ? vm.liveTime.trim() : null;
+
+    // Czy zaktualizujemy wynik? Tylko mecze LIVE i tylko jeśli w bazie nie są jeszcze
+    // FINISHED (wynik końcowy należy do football-data/admina — nie nadpisujemy).
     const dbFinished = m.status === "FINISHED";
     const wouldUpdate =
       live && !dbFinished && s1 != null && s2 != null &&
@@ -187,6 +192,7 @@ export async function syncLiveScores(
         v3: `${s1 ?? "-"}:${s2 ?? "-"}`,
         baza: `${m.score1 ?? "-"}:${m.score2 ?? "-"}`,
         v3Status: live ? "LIVE" : finished ? "FIN" : "NS",
+        minuta: minute,
         bazaStatus: m.status,
         zaktualizowalbym: wouldUpdate,
       });
@@ -203,6 +209,16 @@ export async function syncLiveScores(
         })
         .eq("id", m.id);
       summary.updated++;
+    }
+
+    // Minuta — osobny best-effort zapis (zmienia się co poll). Wydzielony, żeby brak
+    // kolumny live_minute (przed migracją 0012) NIE psuł aktualizacji wyniku powyżej.
+    if (live && !dbFinished) {
+      const { error: minErr } = await supabase
+        .from("matches")
+        .update({ live_minute: minute })
+        .eq("id", m.id);
+      if (minErr) summary.minuteError = minErr.message;
     }
   }
 

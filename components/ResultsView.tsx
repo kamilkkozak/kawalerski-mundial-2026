@@ -99,7 +99,7 @@ function LivePanel({ matches, now }: { matches: Match[]; now: number }) {
         <div key={m.id} className="live-row" style={{ background: "color-mix(in srgb, var(--bad) 8%, transparent)" }}>
           {m.status === "FINISHED"
             ? <span className="lr-min ft">KONIEC</span>
-            : <span className="lr-min"><span className="dot" />LIVE</span>}
+            : <span className="lr-min"><span className="dot" />{m.live_minute || "LIVE"}</span>}
           <Flag name={m.team1} />
           <span className="lr-team">{m.team1}</span>
           <span className="lr-score">{m.score1 ?? 0}:{m.score2 ?? 0}</span>

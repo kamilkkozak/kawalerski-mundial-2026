@@ -28,6 +28,7 @@ export type Match = {
   score2: number | null;
   attendance: number | null; // frekwencja — dociągana z API po meczu (null gdy brak)
   status: MatchStatus;
+  live_minute?: string | null; // minuta meczu na żywo (Varzesh3), np. "85'"; null gdy nie live
   // Faza pucharowa (null dla meczów grupowych):
   bracket_code: string | null; // "M73".."M104"
   home_ref: string | null; // deskryptor slotu: "2A" / "1E" / "3/ABCDF" / "W73" / "L101"

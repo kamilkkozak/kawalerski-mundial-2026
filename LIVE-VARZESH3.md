@@ -72,8 +72,11 @@ gita i push wyzwala redeploy, a UI byłoby niezacommitowane, to redeploy z gita 
 Kadencja: GitHub Actions ma minimum 5 min (i bywa opóźniony). Jeśli chcesz ~1–2 min — osobny workflow
 z wewnętrzną pętlą (curl co ~60 s przez ~5 min, exit gdy `no-live-window`); kosztuje minuty Actions (ważne dla repo prywatnego).
 
-### (Opcjonalnie, nieрobione) minuta meczu w „Na żywo"
-Varzesh3 daje `liveTime`; żeby pokazać minutę, trzeba kolumny `live_minute` w `matches` + zapis w syncLiveScores + render w LivePanel. Pominięte — wynik live wystarcza na v1.
+### Minuta meczu w „Na żywo" — ZROBIONE (2026-06-21)
+Varzesh3 daje `liveTime` (np. `"85'"`). Dodane: migracja `0012_live_minute.sql` (kolumna `matches.live_minute text`),
+zapis w `syncLiveScores` (osobny best-effort update — przeżyje brak kolumny przed migracją), render w `LivePanel`
+(`components/ResultsView.tsx`: `{m.live_minute || "LIVE"}`). **WYMAGA odpalenia migracji 0012 w Supabase SQL Editor**
+(`alter table public.matches add column if not exists live_minute text;`) — do tego czasu badge pokazuje „LIVE".
 
 ## Ryzyka / uwagi
 - **Nieoficjalne API** — format Varzesh3 może się zmienić bez ostrzeżenia. Moduł izolowany, ale wtedy live przestanie działać (fallback: ręczne).
